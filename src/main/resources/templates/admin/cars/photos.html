@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>Управление фотографиями</title>
+    <link th:href="@{/css/style.css}" rel="stylesheet"/>
+    <style>
+        .photo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .photo-item {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: center;
+            background: white;
+        }
+        .photo-item img {
+            width: 100%;
+            height: 120px;
+            object-fit: cover;
+            margin-bottom: 10px;
+        }
+        .photo-item .main-badge {
+            background: green;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            display: inline-block;
+            margin-bottom: 5px;
+        }
+        .photo-item form {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+<div class="admin-page">
+    <h1>Фотографии автомобиля</h1>
+    <p><strong th:text="${car.brandName + ' ' + car.modelName}"></strong></p>
+    <a th:href="@{/admin/cars/edit/{id}(id=${car.id})}" class="top-left-button">Назад к автомобилю</a>
+
+    <h2>Загрузить новые фото</h2>
+    <form th:action="@{/admin/cars/{carId}/photos(carId=${car.id})}" method="post" enctype="multipart/form-data">
+        <input type="file" name="photos" multiple accept="image/*" required/>
+        <button type="submit" class="btn">Загрузить</button>
+    </form>
+
+    <h2>Все фото</h2>
+    <div class="photo-grid">
+        <div th:each="img : ${images}" class="photo-item">
+            <img th:src="@{${img.imagePath}}" alt="Фото"/>
+            <div th:if="${img.imagePath == car.image}" class="main-badge">Основное</div>
+            <form th:action="@{/admin/cars/{carId}/photos/set-main/{imageId}(carId=${car.id}, imageId=${img.id})}" method="post">
+                <button type="submit" class="btn-small">Сделать основным</button>
+            </form>
+            <form th:action="@{/admin/cars/{carId}/photos/delete/{imageId}(carId=${car.id}, imageId=${img.id})}" method="post">
+                <button type="submit" class="btn-small" onclick="return confirm('Удалить фото?')">Удалить</button>
+            </form>
+        </div>
+    </div>
+    <div th:if="${images.isEmpty()}">
+        <p>Фотографий пока нет.</p>
+    </div>
+</div>
+</body>
+</html>

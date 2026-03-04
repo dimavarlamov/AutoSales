@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Характеристики автомобиля</title>
+    <link th:href="@{/css/style.css}" rel="stylesheet"/>
+</head>
+<body>
+<div class="admin-page">
+    <h1>Редактирование характеристик</h1>
+    <a th:href="@{/admin/cars/edit/{id}(id=${car.id})}" class="top-left-button">Назад к автомобилю</a>
+
+    <form th:action="@{/admin/cars/{id}/spec(id=${car.id})}" method="post">
+        <div class="input-group">
+            <label>Объём двигателя (л):</label>
+            <input type="number" name="engineVolume" step="0.1" th:value="${spec.engineVolume}" required/>
+        </div>
+        <div class="input-group">
+            <label>Лошадиные силы:</label>
+            <input type="number" name="horsepower" th:value="${spec.horsepower}" required/>
+        </div>
+        <div class="input-group">
+            <label>Цвет:</label>
+            <input type="text" name="color" th:value="${spec.color}" required/>
+        </div>
+        <div class="input-group">
+            <label>Кондиционер:</label>
+            <input type="checkbox" name="airConditioning" th:checked="${spec.airConditioning}" value="true"/>
+        </div>
+        <div class="input-group">
+            <label>Год выпуска:</label>
+            <input type="number" name="year" min="1900" max="2100" th:value="${spec.year}" required/>
+        </div>
+        <div class="input-group">
+            <label>Пробег (км):</label>
+            <input type="number" name="mileage" min="0" step="1" th:value="${spec.mileage}" required/>
+        </div>
+        <button type="submit" class="btn">Сохранить</button>
+    </form>
+</div>
+</body>
+</html>

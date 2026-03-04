@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Детали пользователя</title>
+    <link th:href="@{/css/style.css}" rel="stylesheet"/>
+</head>
+<body>
+<div class="admin-page">
+    <h1>Пользователь</h1>
+    <a href="/admin/users" class="top-left-button">Назад</a>
+    <div class="user-details">
+        <p><strong>ID:</strong> <span th:text="${user.id}"></span></p>
+        <p><strong>Email:</strong> <span th:text="${user.email}"></span></p>
+        <p><strong>Имя:</strong> <span th:text="${user.firstName}"></span></p>
+        <p><strong>Фамилия:</strong> <span th:text="${user.lastName}"></span></p>
+        <p><strong>Отчество:</strong> <span th:text="${user.patronymic}"></span></p>
+        <p><strong>Серия паспорта:</strong> <span th:text="${user.passportSeries}"></span></p>
+        <p><strong>Номер паспорта:</strong> <span th:text="${user.passportNumber}"></span></p>
+        <p><strong>Адрес:</strong> <span th:text="${user.address}"></span></p>
+        <p><strong>Телефон:</strong> <span th:text="${user.phone}"></span></p>
+        <p><strong>Баланс:</strong> <span th:text="${user.balance}"></span></p>
+        <p><strong>Роль:</strong> <span th:text="${user.roleId == 1 ? 'Покупатель' : (user.roleId == 2 ? 'Админ' : 'Неизвестно')}"></span></p>
+        <p><strong>Статус:</strong> <span th:text="${user.enabled ? 'Активен' : 'Заблокирован'}"></span></p>
+    </div>
+    <form th:action="@{/admin/users/{id}/toggle(id=${user.id})}" method="post">
+        <button type="submit" class="btn">Заблокировать/Разблокировать</button>
+    </form>
+    <!-- Форма смены роли (упрощённо) -->
+    <form th:action="@{/admin/users/{id}/role(id=${user.id})}" method="post">
+        <select name="roleId">
+            <option value="1">Покупатель</option>
+            <option value="2">Администратор</option>
+        </select>
+        <button type="submit" class="btn">Сменить роль</button>
+    </form>
+</div>
+</body>
+</html>

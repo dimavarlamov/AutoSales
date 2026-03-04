@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Мои покупки</title>
+    <link th:href="@{/css/style.css}" rel="stylesheet"/>
+    <style>
+        .btn-small {
+            display: inline-block;
+            padding: 5px 10px;
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: 4px;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: background-color 0.3s;
+        }
+        .btn-small:hover {
+            background-color: var(--secondary-color);
+        }
+        .styled-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        .styled-table th,
+        .styled-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        .styled-table th {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        .styled-table tr:hover {
+            background-color: #f5f5f5;
+        }
+    </style>
+</head>
+<body>
+<header class="header">
+    <nav class="nav">
+        <a href="/catalog" class="logo">
+            <img th:src="@{/images/logoAutoSales.jpg}" alt="AutoSales" class="logo-img"/>
+        </a>
+        <ul class="nav-menu">
+            <!-- Пункты для всех авторизованных -->
+            <li sec:authorize="isAuthenticated()"><a href="/profile" class="nav-link">Профиль</a></li>
+            <li sec:authorize="isAuthenticated()"><a href="/profile/orders" class="nav-link">Мои заказы</a></li>
+            <li sec:authorize="isAuthenticated()"><a href="/favorites" class="nav-link">Избранное</a></li>
+            <!-- Для админа -->
+            <li sec:authorize="hasAuthority('ROLE_ADMIN')"><a href="/admin/dashboard" class="nav-link">Админка</a></li>
+            <!-- Для неавторизованных -->
+            <li sec:authorize="!isAuthenticated()"><a href="/auth/login" class="nav-link">Вход</a></li>
+            <li sec:authorize="!isAuthenticated()"><a href="/register" class="nav-link">Регистрация</a></li>
+            <!-- Выход -->
+            <li sec:authorize="isAuthenticated()">
+                <form th:action="@{/logout}" method="post">
+                    <button type="submit" class="nav-link" style="background:none; border:none; cursor:pointer;">Выйти</button>
+                </form>
+            </li>
+        </ul>
+    </nav>
+</header>
+
+<main>
+    <h1>Ваши покупки</h1>
+    <table class="styled-table" th:if="${not #lists.isEmpty(sales)}">
+        <thead>
+        <tr>
+            <th>Дата</th>
+            <th>Сумма</th>
+            <th></th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="sale : ${sales}">
+            <td th:text="${#temporals.format(sale.saleDate, 'dd.MM.yyyy HH:mm')}"></td>
+            <td th:text="${#numbers.formatDecimal(sale.totalAmount, 0, 0) + ' ₽'}"></td>
+            <td>
+                <a th:href="@{/profile/orders/{id}(id=${sale.id})}" class="btn-small">Детали</a>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+    <p th:unless="${not #lists.isEmpty(sales)}">У вас пока нет покупок.</p>
+</main>
+</body>
+</html>

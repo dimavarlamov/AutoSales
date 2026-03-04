@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Детали продажи</title>
+    <link th:href="@{/css/style.css}" rel="stylesheet"/>
+</head>
+<body>
+<div class="admin-page">
+    <h1>Продажа #<span th:text="${sale.id}"></span></h1>
+    <a href="/admin/sales" class="top-left-button">Назад</a>
+    <p>Здесь будут детали продажи и список автомобилей.</p>
+</div>
+</body>
+</html>

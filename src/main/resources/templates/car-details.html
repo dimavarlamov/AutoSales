@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${car.brandName + ' ' + car.modelName}">Автомобиль</title>
+    <link th:href="@{/css/style.css}" rel="stylesheet"/>
+    <style>
+        /* Стили для галереи */
+        .car-image-gallery {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+        }
+        .main-image {
+            width: 100%;
+            max-height: 400px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .main-image img {
+            max-width: 100%;
+            max-height: 400px;
+            object-fit: contain;
+        }
+        .thumbnail-list {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 10px;
+        }
+        .thumbnail {
+            width: 80px;
+            height: 60px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: border 0.2s;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .thumbnail img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .thumbnail img.active {
+            border: 2px solid var(--primary-color);
+        }
+        .specs {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 20px;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 8px;
+        }
+        .specs p {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+<header class="header">
+    <nav class="nav">
+        <a href="/catalog" class="logo">
+            <img th:src="@{/images/logoAutoSales.jpg}" alt="AutoSales" class="logo-img"/>
+        </a>
+        <ul class="nav-menu">
+            <li><a href="/catalog" class="nav-link">Каталог</a></li>
+            <li sec:authorize="isAuthenticated()"><a href="/profile" class="nav-link">Профиль</a></li>
+            <li sec:authorize="isAuthenticated()"><a href="/profile/orders" class="nav-link">Мои заказы</a></li>
+            <li sec:authorize="isAuthenticated()"><a href="/favorites" class="nav-link">Избранное</a></li>
+            <li sec:authorize="hasRole('ADMIN')"><a href="/admin/dashboard" class="nav-link">Админка</a></li>
+            <li sec:authorize="!isAuthenticated()"><a href="/auth/login" class="nav-link">Вход</a></li>
+            <li sec:authorize="!isAuthenticated()"><a href="/register" class="nav-link">Регистрация</a></li>
+            <li sec:authorize="isAuthenticated()">
+                <form th:action="@{/logout}" method="post">
+                    <button type="submit" class="nav-link" style="background:none; border:none; cursor:pointer;">Выйти</button>
+                </form>
+            </li>
+        </ul>
+    </nav>
+</header>
+
+<div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+<div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+
+<main>
+    <div class="car-details-container">
+        <!-- Галерея изображений -->
+        <div class="car-image-gallery">
+            <div class="main-image">
+                <img id="mainCarImage" th:src="@{${car.image != null ? car.image : '/images/no-image.jpg'}}" alt="Фото автомобиля"/>
+            </div>
+            <!-- Миниатюры: основное + дополнительные -->
+            <div class="thumbnail-list" th:if="${not #lists.isEmpty(images) or car.image != null}">
+                <!-- Основное фото (если есть) -->
+                <div class="thumbnail" th:if="${car.image != null}">
+                    <img th:src="@{${car.image}}" th:data-full="${car.image}" class="active" onclick="changeImage(this)"/>
+                </div>
+                <!-- Дополнительные фото -->
+                <div class="thumbnail" th:each="img : ${images}">
+                    <img th:src="@{${img.imagePath}}" th:data-full="${img.imagePath}" onclick="changeImage(this)"/>
+                </div>
+            </div>
+            <div th:if="${#lists.isEmpty(images) and car.image == null}">
+                <p>Нет фотографий</p>
+            </div>
+        </div>
+
+        <div class="car-info">
+            <h1 th:text="${car.brandName + ' ' + car.modelName}">Марка Модель</h1>
+            <p class="price" th:text="${#numbers.formatDecimal(car.price, 0, 0) + ' ₽'}">Цена</p>
+            <p th:if="${car.stockQuantity > 0}" style="color:green;">В наличии: <span th:text="${car.stockQuantity}"></span></p>
+            <p th:unless="${car.stockQuantity > 0}" style="color:red;">Нет в наличии</p>
+            <p th:if="${car.expectedDate}" th:text="'Ожидается: ' + ${car.expectedDate}">Дата поступления</p>
+            <p><strong>Страна производитель:</strong> <span th:text="${car.brandCountry}"></span></p>
+            <p th:text="${car.description}">Описание</p>
+
+            <!-- Характеристики (объединённые) -->
+            <h3>Характеристики</h3>
+            <div class="specs">
+                <!-- Характеристики модели (общие) -->
+                <p><strong>Тип кузова:</strong> <span th:text="${model.bodyType}"></span></p>
+                <p><strong>Количество дверей:</strong> <span th:text="${model.doorsCount}"></span></p>
+                <p><strong>Количество мест:</strong> <span th:text="${model.seatsCount}"></span></p>
+                <p><strong>Тип двигателя:</strong>
+                    <span th:if="${model.engineType == 'petrol'}">Бензин</span>
+                    <span th:if="${model.engineType == 'diesel'}">Дизель</span>
+                    <span th:if="${model.engineType == 'hybrid'}">Гибрид</span>
+                    <span th:if="${model.engineType == 'electric'}">Электро</span>
+                    <span th:if="${model.engineType == null}">Не указано</span>
+                </p>
+                <p><strong>Коробка передач:</strong>
+                    <span th:if="${model.transmission == 'manual'}">Механическая</span>
+                    <span th:if="${model.transmission == 'automatic'}">Автоматическая</span>
+                </p>
+                <p><strong>Усилитель руля:</strong>
+                    <span th:if="${model.steeringType == 'electric'}">Электроусилитель</span>
+                    <span th:if="${model.steeringType == 'hydraulic'}">Гидроусилитель</span>
+                    <span th:if="${model.steeringType == 'none'}">Отсутствует</span>
+                </p>
+                <p><strong>Руль:</strong> <span th:text="${model.steeringWheelSide == 'left' ? 'Левый' : 'Правый'}"></span></p>
+
+                <!-- Характеристики конкретного автомобиля (если есть) -->
+                <p th:if="${spec != null and spec.year != null}"><strong>Год выпуска:</strong> <span th:text="${spec.year}"></span></p>
+                <p th:if="${spec != null and spec.mileage != null}"><strong>Пробег:</strong> <span th:text="${spec.mileage} + ' км'"></span></p>
+                <p th:if="${spec != null and spec.engineVolume != null}"><strong>Объём двигателя:</strong> <span th:text="${spec.engineVolume} + ' л'"></span></p>
+                <p th:if="${spec != null and spec.horsepower != null}"><strong>Лошадиные силы:</strong> <span th:text="${spec.horsepower} + ' л.с.'"></span></p>
+                <p th:if="${spec != null and spec.color != null}"><strong>Цвет:</strong> <span th:text="${spec.color}"></span></p>
+                <p th:if="${spec != null}"><strong>Кондиционер:</strong> <span th:text="${spec.airConditioning ? 'Да' : 'Нет'}"></span></p>
+            </div>
+
+            <!-- Кнопка добавления в избранное -->
+            <form th:action="@{/favorites/toggle}" method="post">
+                <input type="hidden" name="carId" th:value="${car.id}"/>
+                <button type="submit" class="favorite-btn-large">❤ Добавить в избранное</button>
+            </form>
+            <!-- Кнопки покупки(только для авторизованных покупателей) -->
+            <div sec:authorize="isAuthenticated() and !hasRole('ADMIN')" style="margin-top:20px;">
+                <form th:action="@{/purchase/buy/{id}(id=${car.id})}" method="post">
+                    <button type="submit" class="btn btn-success" onclick="return confirm('Подтвердите покупку')">Купить</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- Скрипт для переключения изображений -->
+<script>
+    function changeImage(thumb) {
+        var mainImage = document.getElementById('mainCarImage');
+        var fullSize = thumb.getAttribute('data-full');
+        if (fullSize) {
+            mainImage.src = fullSize;
+            // Убираем класс active у всех миниатюр
+            document.querySelectorAll('.thumbnail img').forEach(img => img.classList.remove('active'));
+            thumb.classList.add('active');
+        }
+    }
+</script>
+</body>
+</html>

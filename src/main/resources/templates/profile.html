@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title>Профиль пользователя</title>
+    <link th:href="@{/css/style.css}" rel="stylesheet"/>
+</head>
+<body>
+<header class="header">
+    <nav class="nav">
+        <a href="/catalog" class="logo">
+            <img th:src="@{/images/logoAutoSales.jpg}" alt="AutoSales" class="logo-img"/>
+        </a>
+        <ul class="nav-menu">
+            <li><a href="/catalog" class="nav-link">Каталог</a></li>
+            <li><a href="/profile" class="nav-link">Профиль</a></li>
+            <li sec:authorize="isAuthenticated()"><a href="/profile/orders" class="nav-link">Мои заказы</a></li>
+            <li><a href="/favorites" class="nav-link">Избранное</a></li>
+            <li sec:authorize="hasRole('ADMIN')"><a href="/admin/dashboard" class="nav-link">Админка</a></li>
+            <li>
+                <form th:action="@{/logout}" method="post">
+                    <button type="submit" class="nav-link" style="background:none; border:none; cursor:pointer;">Выйти</button>
+                </form>
+            </li>
+        </ul>
+    </nav>
+</header>
+
+<main>
+    <div class="auth-container">
+        <div class="auth-content">
+            <h2 class="auth-title">Профиль пользователя</h2>
+
+            <div th:if="${success}" class="success fade-in" th:text="${success}"></div>
+
+            <form th:action="@{/profile/update}" method="post" class="auth-form">
+                <div class="input-group">
+                    <input type="email" th:value="${user.email}" readonly disabled/>
+                    <label>Email (нельзя изменить)</label>
+                </div>
+
+                <div class="input-group">
+                    <input type="text" name="firstName" th:value="${user.firstName}" required/>
+                    <label>Имя</label>
+                </div>
+
+                <div class="input-group">
+                    <input type="text" name="lastName" th:value="${user.lastName}" required/>
+                    <label>Фамилия</label>
+                </div>
+
+                <div class="input-group">
+                    <input type="text" name="patronymic" th:value="${user.patronymic}"/>
+                    <label>Отчество (необязательно)</label>
+                </div>
+
+                <div class="input-group">
+                    <input type="text" name="passportSeries" th:value="${user.passportSeries}" maxlength="4" pattern="\d*" title="Только цифры, 4 символа"/>
+                    <label>Серия паспорта</label>
+                </div>
+
+                <div class="input-group">
+                    <input type="text" name="passportNumber" th:value="${user.passportNumber}" maxlength="6" pattern="\d*" title="Только цифры, 6 символов"/>
+                    <label>Номер паспорта</label>
+                </div>
+
+                <div class="input-group">
+                    <input type="text" name="address" th:value="${user.address}"/>
+                    <label>Адрес</label>
+                </div>
+
+                <div class="input-group">
+                    <input type="tel" name="phone" th:value="${user.phone}" pattern="\+7 \d{3} \d{3} \d{2} \d{2}" title="Формат: +7 XXX XXX XX XX"/>
+                    <label>Телефон</label>
+                </div>
+
+                <div class="input-group">
+                    <select name="paymentTypeDefault">
+                        <option value="">Не выбран</option>
+                        <option value="cash" th:selected="${user.paymentTypeDefault == 'cash'}">Наличные</option>
+                        <option value="bank_transfer" th:selected="${user.paymentTypeDefault == 'bank_transfer'}">Перечисление</option>
+                        <option value="credit" th:selected="${user.paymentTypeDefault == 'credit'}">Кредит</option>
+                    </select>
+                    <label>Предпочтительный способ оплаты</label>
+                </div>
+
+                <button type="submit" class="auth-button">Сохранить изменения</button>
+            </form>
+
+            <p class="auth-link">Баланс: <span th:text="${user.balance}"></span> ₽</p>
+        </div>
+    </div>
+</main>
+</body>
+</html>

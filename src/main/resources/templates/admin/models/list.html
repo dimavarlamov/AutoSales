@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Модели автомобилей</title>
+    <link th:href="@{/css/style.css}" rel="stylesheet"/>
+</head>
+<body>
+<div class="admin-page">
+    <h1>Модели</h1>
+    <a href="/admin/dashboard" class="top-left-button">Назад</a>
+    <a href="/admin/models/new" class="btn">Добавить модель</a>
+    <form th:action="@{/admin/models}" method="get">
+        <select name="brandId">
+            <option value="">Все марки</option>
+            <option th:each="brand : ${brands}" th:value="${brand.id}" th:text="${brand.name}" th:selected="${selectedBrandId == brand.id}"></option>
+        </select>
+        <button type="submit">Фильтр</button>
+    </form>
+    <table class="manage-table">
+        <thead>
+        <tr><th>ID</th><th>Марка</th><th>Название модели</th><th>Действия</th></tr>
+        </thead>
+        <tbody>
+        <tr th:each="model : ${models}">
+            <td th:text="${model.id}"></td>
+            <td th:text="${model.brandName}"></td>
+            <td th:text="${model.name}"></td>
+            <td>
+                <a th:href="@{/admin/models/edit/{id}(id=${model.id})}">Редактировать</a>
+                <form th:action="@{/admin/models/delete/{id}(id=${model.id})}" method="post" style="display:inline;">
+                    <button type="submit" onclick="return confirm('Удалить модель?')">Удалить</button>
+                </form>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+</body>
+</html>

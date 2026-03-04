@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Админ-панель AutoSales</title>
+    <link th:href="@{/css/style.css}" rel="stylesheet"/>
+</head>
+<body>
+<div class="admin-page">
+    <h1>Панель администратора</h1>
+    <div class="dashboard-links">
+        <a href="/admin/users" class="btn">Управление пользователями</a>
+        <a href="/admin/cars" class="btn">Управление автомобилями</a>
+        <a href="/admin/brands" class="btn">Марки</a>
+        <a href="/admin/models" class="btn">Модели</a>
+        <a href="/admin/sales" class="btn">Продажи</a>
+    </div>
+    <a href="/catalog" class="top-left-button">На главную</a>
+</div>
+</body>
+</html>

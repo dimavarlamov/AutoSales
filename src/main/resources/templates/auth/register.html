@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Регистрация</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}"/>
+</head>
+<body>
+<div class="auth-container">
+    <div class="auth-content">
+        <h2 class="auth-title">Регистрация</h2>
+
+        <div th:if="${error}" class="error fade-in" th:text="${error}"></div>
+
+        <form class="auth-form" th:action="@{/register}" method="post" th:object="${user}">
+
+            <div th:if="${#fields.hasErrors()}" class="error fade-in">
+                <ul>
+                    <li th:each="err : ${#fields.errors('*')}" th:text="${err}"></li>
+                </ul>
+            </div>
+
+            <div class="input-group">
+                <input th:field="*{lastName}" type="text" placeholder=" " required/>
+                <label>Фамилия</label>
+            </div>
+
+            <div class="input-group">
+                <input th:field="*{firstName}" type="text" placeholder=" " required/>
+                <label>Имя</label>
+            </div>
+
+            <div class="input-group">
+                <input th:field="*{patronymic}" type="text" placeholder=" "/>
+                <label>Отчество (необязательно)</label>
+            </div>
+
+            <div class="input-group">
+                <input th:field="*{email}" type="email" placeholder=" " required/>
+                <label>Email</label>
+            </div>
+
+            <div class="input-group">
+                <input th:field="*{password}" type="password" placeholder=" " required/>
+                <label>Пароль</label>
+            </div>
+
+            <div class="input-group">
+                <input th:field="*{matchingPassword}" type="password" placeholder=" " required/>
+                <label>Подтвердите пароль</label>
+            </div>
+
+            <button type="submit" class="auth-button">Зарегистрироваться</button>
+        </form>
+
+        <p class="auth-link">Уже есть аккаунт? <a th:href="@{/auth/login}">Войти</a></p>
+    </div>
+</div>
+</body>
+</html>

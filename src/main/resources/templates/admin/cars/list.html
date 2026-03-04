@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Управление автомобилями</title>
+    <link th:href="@{/css/style.css}" rel="stylesheet"/>
+</head>
+<body>
+<div class="admin-page">
+    <h1>Автомобили</h1>
+    <a href="/admin/dashboard" class="top-left-button">Назад</a>
+    <a href="/admin/cars/new" class="btn">Добавить автомобиль</a>
+
+    <!-- Простая форма поиска/фильтрации -->
+    <form th:action="@{/admin/cars}" method="get" class="filter-form">
+        <input type="text" name="search" placeholder="Поиск" th:value="${searchQuery}"/>
+        <select name="brandId">
+            <option value="">Все марки</option>
+            <option th:each="brand : ${brands}" th:value="${brand.id}" th:text="${brand.name}" th:selected="${selectedBrandId == brand.id}"></option>
+        </select>
+        <input type="number" name="minPrice" placeholder="Мин. цена" th:value="${minPrice}"/>
+        <input type="number" name="maxPrice" placeholder="Макс. цена" th:value="${maxPrice}"/>
+        <button type="submit">Применить</button>
+    </form>
+
+    <table class="manage-table">
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Изображение</th>
+            <th>Марка/Модель</th>
+            <th>Цена</th>
+            <th>Наличие</th>
+            <th>Действия</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="car : ${cars}">
+            <td th:text="${car.id}"></td>
+            <td><img th:src="@{${car.image}}" class="product-thumb" alt=""/></td>
+            <td th:text="${car.brandName + ' ' + car.modelName}"></td>
+            <td th:text="${#numbers.formatDecimal(car.price, 0, 0) + ' ₽'}"></td>
+            <td th:text="${car.stockQuantity}"></td>
+            <td>
+                <a th:href="@{/admin/cars/edit/{id}(id=${car.id})}">Редактировать</a>
+                <form th:action="@{/admin/cars/delete/{id}(id=${car.id})}" method="post" style="display:inline;">
+                    <button type="submit" onclick="return confirm('Удалить?')">Удалить</button>
+                </form>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+    <!-- Пагинация -->
+    <div class="pagination" th:if="${totalPages > 1}">
+        <a th:each="i : ${#numbers.sequence(1, totalPages)}"
+           th:href="@{/admin/cars(page=${i-1}, search=${searchQuery}, brandId=${selectedBrandId}, minPrice=${minPrice}, maxPrice=${maxPrice})}"
+           th:class="${currentPage == i-1} ? 'active'"
+           th:text="${i}"></a>
+    </div>
+</div>
+</body>
+</html>

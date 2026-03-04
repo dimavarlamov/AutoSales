@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AutoSales - Каталог автомобилей</title>
+    <link th:href="@{/css/style.css}" rel="stylesheet"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.1/css/all.min.css"/>
+</head>
+<body>
+<header class="header">
+    <nav class="nav">
+        <a href="/catalog" class="logo">
+            <img th:src="@{/images/logoAutoSales.jpg}" alt="AutoSales" class="logo-img"/>
+        </a>
+        <div class="nav-search">
+            <form th:action="@{/catalog}" method="get" class="search-form">
+                <input type="text" name="search" th:value="${searchQuery}" placeholder="Поиск по марке или модели..." class="search-input"/>
+                <button type="submit" class="search-button">Найти</button>
+            </form>
+            <div class="filter-container">
+                <button class="filter-button">Фильтры</button>
+                <form th:action="@{/catalog}" method="get" class="filter-form" id="filter-form">
+                    <!-- Бренд -->
+                    <label for="brandId">Марка:</label>
+                    <select name="brandId" id="brandId">
+                        <option value="">Все марки</option>
+                        <option th:each="brand : ${brands}"
+                                th:value="${brand.id}"
+                                th:text="${brand.name}"
+                                th:selected="${param.brandId != null and param.brandId[0] == brand.id}"></option>
+                    </select>
+                    <!-- Цена -->
+                    <label for="minPrice">Мин. цена:</label>
+                    <input type="number" name="minPrice" id="minPrice" min="0" th:value="${param.minPrice}"/>
+                    <label for="maxPrice">Макс. цена:</label>
+                    <input type="number" name="maxPrice" id="maxPrice" min="0" th:value="${param.maxPrice}"/>
+                    <div class="button-group">
+                        <button type="submit" class="apply-btn">Применить</button>
+                        <button type="button" class="reset-btn" onclick="window.location.href='/catalog'">Сбросить</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <ul class="nav-menu">
+            <!-- Пункты для всех авторизованных -->
+            <li sec:authorize="isAuthenticated()"><a href="/profile" class="nav-link">Профиль</a></li>
+            <li sec:authorize="isAuthenticated()"><a href="/profile/orders" class="nav-link">Мои заказы</a></li>
+            <li sec:authorize="isAuthenticated()"><a href="/favorites" class="nav-link">Избранное</a></li>
+            <!-- Для админа -->
+            <li sec:authorize="hasAuthority('ROLE_ADMIN')"><a href="/admin/dashboard" class="nav-link">Админка</a></li>
+            <!-- Для неавторизованных -->
+            <li sec:authorize="!isAuthenticated()"><a href="/auth/login" class="nav-link">Вход</a></li>
+            <li sec:authorize="!isAuthenticated()"><a href="/register" class="nav-link">Регистрация</a></li>
+            <!-- Выход -->
+            <li sec:authorize="isAuthenticated()">
+                <form th:action="@{/logout}" method="post">
+                    <button type="submit" class="nav-link" style="background:none; border:none; cursor:pointer;">Выйти</button>
+                </form>
+            </li>
+        </ul>
+    </nav>
+</header>
+
+<main>
+    <div class="product-grid">
+        <div th:each="car : ${cars}" class="product-card">
+            <a th:href="@{/cars/{id}(id=${car.id})}">
+                <img th:src="@{${car.image != null ? car.image : '/images/no-image.jpg'}}" class="product-img" th:alt="${car.brandName + ' ' + car.modelName}"/>
+                <h3 th:text="${car.brandName + ' ' + car.modelName}">Марка Модель</h3>
+                <p class="price" th:text="${#numbers.formatDecimal(car.price, 0, 0) + ' ₽'}">цена</p>
+                <p th:if="${car.stockQuantity > 0}" style="color:green;">В наличии</p>
+                <p th:unless="${car.stockQuantity > 0}" style="color:red;">Нет в наличии</p>
+            </a>
+            <!-- Избранное -->
+            <form th:action="@{/favorites/toggle}" method="post">
+                <input type="hidden" name="carId" th:value="${car.id}"/>
+                <button type="submit" class="favorite-btn"
+                        th:classappend="${favoriteStatus != null and favoriteStatus.get(car.id) ? 'active' : ''}">
+                    <i class="fas fa-heart"></i>
+                </button>
+            </form>
+            <!-- Кнопка подробнее -->
+            <a th:href="@{/cars/{id}(id=${car.id})}" class="details-btn">Подробнее</a>
+        </div>
+        <div th:if="${cars.isEmpty()}" class="no-products">
+            <p>Автомобили не найдены</p>
+        </div>
+    </div>
+
+    <!-- Пагинация -->
+    <div class="pagination" th:if="${totalPages > 1}">
+        <a th:each="i : ${#numbers.sequence(1, totalPages)}"
+           th:href="@{/catalog(page=${i-1}, search=${searchQuery}, brandId=${param.brandId}, minPrice=${param.minPrice}, maxPrice=${param.maxPrice})}"
+           th:class="${currentPage == i-1} ? 'active'"
+           th:text="${i}"></a>
+    </div>
+</main>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // Фильтры: показать/скрыть панель
+        document.querySelector('.filter-button')?.addEventListener('click', (e) => {
+            e.stopPropagation();
+            document.querySelector('.filter-form').classList.toggle('active');
+        });
+
+        document.addEventListener('click', (e) => {
+            const filterContainer = document.querySelector('.filter-container');
+            if (!filterContainer.contains(e.target)) {
+                document.querySelector('.filter-form').classList.remove('active');
+            }
+        });
+
+        // Проверка цены перед отправкой
+        document.getElementById('filter-form')?.addEventListener('submit', (e) => {
+            const minPrice = parseFloat(document.getElementById('minPrice').value) || 0;
+            const maxPrice = parseFloat(document.getElementById('maxPrice').value) || Infinity;
+            if (minPrice > maxPrice) {
+                e.preventDefault();
+                alert('Минимальная цена не может быть больше максимальной');
+            }
+        });
+    });
+</script>
+</body>
+</html>

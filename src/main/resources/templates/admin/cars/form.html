@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:if="${car.id == null}">Добавление автомобиля</title>
+    <title th:unless="${car.id == null}">Редактирование автомобиля</title>
+    <link th:href="@{/css/style.css}" rel="stylesheet"/>
+</head>
+<body>
+<div class="admin-page">
+    <h1 th:if="${car.id == null}">Добавить автомобиль</h1>
+    <h1 th:unless="${car.id == null}">Редактировать автомобиль</h1>
+    <a href="/admin/cars" class="top-left-button">Назад</a>
+
+    <form th:action="@{${car.id == null} ? '/admin/cars/save' : '/admin/cars/update'}" method="post" enctype="multipart/form-data">
+        <input type="hidden" name="id" th:value="${car.id}" th:if="${car.id != null}"/>
+        <!-- Скрытое поле для сохранения текущего изображения при редактировании -->
+        <input type="hidden" name="image" th:value="${car.image}" />
+
+        <div class="input-group">
+            <label>Марка:</label>
+            <select name="brandId" id="brandSelect" required>
+                <option value="">Выберите марку</option>
+                <option th:each="brand : ${brands}"
+                        th:value="${brand.id}"
+                        th:text="${brand.name}"
+                        th:selected="${selectedBrandId != null and selectedBrandId == brand.id}"></option>
+            </select>
+        </div>
+
+        <div class="input-group">
+            <label>Модель:</label>
+            <select name="modelId" id="modelSelect" required>
+                <option value="">Выберите модель</option>
+                <option th:each="model : ${models}"
+                        th:value="${model.id}"
+                        th:text="${model.name}"
+                        th:selected="${car != null and car.modelId == model.id}"></option>
+            </select>
+        </div>
+
+        <div class="input-group">
+            <label>Цена:</label>
+            <input type="number" name="price" step="0.01" th:value="${car.price}" required/>
+        </div>
+
+        <div class="input-group">
+            <label>Количество на складе:</label>
+            <input type="number" name="stockQuantity" th:value="${car.stockQuantity}" required/>
+        </div>
+
+        <div class="input-group">
+            <label>Дата ожидаемого поступления (если нет в наличии):</label>
+            <input type="date" name="expectedDate" th:value="${car.expectedDate}"/>
+        </div>
+
+        <div class="input-group">
+            <label>Описание:</label>
+            <textarea name="description" th:text="${car.description}"></textarea>
+        </div>
+
+        <div class="input-group">
+            <label>Изображение:</label>
+            <input type="file" name="imageFile" accept="image/*"/>
+            <span th:if="${car.image != null}">
+                Текущее: <img th:src="@{${car.image}}" width="100" style="display:block; margin-top:5px;"/>
+            </span>
+        </div>
+
+        <button type="submit" class="btn">Сохранить</button>
+    </form>
+
+    <!-- Ссылка на редактирование характеристик, если автомобиль уже существует -->
+    <div th:if="${car.id != null}" style="margin-top:20px;">
+        <a th:href="@{/admin/cars/{id}/spec(id=${car.id})}" class="btn">Редактировать характеристики</a>
+    </div>
+
+    <div th:if="${car.id != null}" style="margin-top:20px;">
+        <a th:href="@{/admin/cars/{id}/photos(id=${car.id})}" class="btn">Управление фотографиями</a>
+    </div>
+
+    <script>
+        document.getElementById('brandSelect').addEventListener('change', function() {
+            var brandId = this.value;
+            var modelSelect = document.getElementById('modelSelect');
+            modelSelect.innerHTML = '<option value="">Загрузка...</option>';
+            fetch('/api/models/byBrand/' + brandId)
+                .then(response => response.json())
+                .then(data => {
+                    modelSelect.innerHTML = '<option value="">Выберите модель</option>';
+                    data.forEach(function(model) {
+                        var option = document.createElement('option');
+                        option.value = model.id;
+                        option.textContent = model.name;
+                        modelSelect.appendChild(option);
+                    });
+                })
+                .catch(error => {
+                    modelSelect.innerHTML = '<option value="">Ошибка загрузки</option>';
+                });
+        });
+    </script>
+</div>
+</body>
+</html>

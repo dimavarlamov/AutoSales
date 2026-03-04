@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:if="${brand.id == null}">Добавление марки</title>
+    <title th:unless="${brand.id == null}">Редактирование марки</title>
+    <link th:href="@{/css/style.css}" rel="stylesheet"/>
+</head>
+<body>
+<div class="admin-page">
+    <h1 th:if="${brand.id == null}">Добавить марку</h1>
+    <h1 th:unless="${brand.id == null}">Редактировать марку</h1>
+    <a href="/admin/brands" class="top-left-button">Назад</a>
+    <form th:action="@{${brand.id == null} ? '/admin/brands/save' : '/admin/brands/update'}" method="post">
+        <input type="hidden" name="id" th:value="${brand.id}" th:if="${brand.id != null}"/>
+        <div class="input-group">
+            <label>Название марки:</label>
+            <input type="text" name="name" th:value="${brand.name}" required/>
+        </div>
+        <div class="input-group">
+            <label>Страна производитель:</label>
+            <input type="text" name="country" th:value="${brand.country}" required/>
+        </div>
+        <button type="submit" class="btn">Сохранить</button>
+    </form>
+</div>
+</body>
+</html>

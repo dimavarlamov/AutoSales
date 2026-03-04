@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:if="${model.id == null}">Добавление модели</title>
+    <title th:unless="${model.id == null}">Редактирование модели</title>
+    <link th:href="@{/css/style.css}" rel="stylesheet"/>
+</head>
+<body>
+<div class="admin-page">
+    <h1 th:if="${model.id == null}">Добавить модель</h1>
+    <h1 th:unless="${model.id == null}">Редактировать модель</h1>
+    <a href="/admin/models" class="top-left-button">Назад</a>
+    <form th:action="@{${model.id == null} ? '/admin/models/save' : '/admin/models/update'}" method="post">
+        <input type="hidden" name="id" th:value="${model.id}" th:if="${model.id != null}"/>
+        <div class="input-group">
+            <label>Марка:</label>
+            <select name="brandId" required>
+                <option value="">Выберите марку</option>
+                <option th:each="brand : ${brands}" th:value="${brand.id}" th:text="${brand.name}" th:selected="${model.brandId == brand.id}"></option>
+            </select>
+        </div>
+        <div class="input-group">
+            <label>Название модели:</label>
+            <input type="text" name="name" th:value="${model.name}" required/>
+        </div>
+        <div class="input-group">
+            <label>Тип усилителя руля:</label>
+            <select name="steeringType" required>
+                <option value="">Выберите</option>
+                <option value="electric" th:selected="${model.steeringType == 'electric'}">Электроусилитель (ЭУР)</option>
+                <option value="hydraulic" th:selected="${model.steeringType == 'hydraulic'}">Гидроусилитель (ГУР)</option>
+                <option value="none" th:selected="${model.steeringType == 'none'}">Отсутствует</option>
+            </select>
+        </div>
+        <div class="input-group">
+            <label>Коробка передач:</label>
+            <select name="transmission" required>
+                <option value="">Выберите</option>
+                <option value="manual" th:selected="${model.transmission == 'manual'}">Механическая</option>
+                <option value="automatic" th:selected="${model.transmission == 'automatic'}">Автоматическая</option>
+            </select>
+        </div>
+        <div class="input-group">
+            <label>Тип двигателя:</label>
+            <select name="engineType" required>
+                <option value="">Выберите</option>
+                <option value="petrol" th:selected="${model.engineType == 'petrol'}">Бензин</option>
+                <option value="diesel" th:selected="${model.engineType == 'diesel'}">Дизель</option>
+                <option value="hybrid" th:selected="${model.engineType == 'hybrid'}">Гибрид</option>
+                <option value="electric" th:selected="${model.engineType == 'electric'}">Электро</option>
+            </select>
+        </div>
+        <div class="input-group">
+            <label>Расположение руля:</label>
+            <select name="steeringWheelSide" required>
+                <option value="">Выберите</option>
+                <option value="left" th:selected="${model.steeringWheelSide == 'left'}">Левый</option>
+                <option value="right" th:selected="${model.steeringWheelSide == 'right'}">Правый</option>
+            </select>
+        </div>
+        <div class="input-group">
+            <label>Тип кузова:</label>
+            <input type="text" name="bodyType" th:value="${model.bodyType}" required/>
+        </div>
+        <div class="input-group">
+            <label>Количество дверей:</label>
+            <input type="number" name="doorsCount" th:value="${model.doorsCount}" required min="1"/>
+        </div>
+        <div class="input-group">
+            <label>Количество мест:</label>
+            <input type="number" name="seatsCount" th:value="${model.seatsCount}" required min="1"/>
+        </div>
+        <button type="submit" class="btn">Сохранить</button>
+    </form>
+</div>
+</body>
+</html>

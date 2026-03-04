@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Марки автомобилей</title>
+    <link th:href="@{/css/style.css}" rel="stylesheet"/>
+</head>
+<body>
+<div class="admin-page">
+    <h1>Марки</h1>
+    <a href="/admin/dashboard" class="top-left-button">Назад</a>
+    <a href="/admin/brands/new" class="btn">Добавить марку</a>
+    <table class="manage-table">
+        <thead>
+        <tr><th>ID</th><th>Название</th><th>Действия</th></tr>
+        </thead>
+        <tbody>
+        <tr th:each="brand : ${brands}">
+            <td th:text="${brand.id}"></td>
+            <td th:text="${brand.name}"></td>
+            <td>
+                <a th:href="@{/admin/brands/edit/{id}(id=${brand.id})}">Редактировать</a>
+                <form th:action="@{/admin/brands/delete/{id}(id=${brand.id})}" method="post" style="display:inline;">
+                    <button type="submit" onclick="return confirm('Удалить марку? Это также удалит все связанные модели!')">Удалить</button>
+                </form>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+</body>
+</html>
