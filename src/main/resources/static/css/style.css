@@ -48,8 +48,16 @@ body {
 .nav-search {
     flex: 1 1 500px;
     display: flex;
+    align-items: center;
+    gap: 0.5rem;
     margin: 0 2rem;
     min-width: 250px;
+}
+
+.search-form {
+    display: flex;
+    flex: 1 1 auto;
+    align-items: stretch;
 }
 
 .search-input {
@@ -97,6 +105,13 @@ body {
         order: 2;
         width: 100%;
         margin: 1rem 0 0;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.75rem;
+    }
+
+    .search-form {
+        width: 100%;
     }
 
     .product-grid {
@@ -1043,7 +1058,17 @@ color:#dc3545;
     display: flex;
     gap: 0.6rem; /* чуть уже между пунктами */
     align-items: center;
-    overflow: visible;
+  }
+
+  /* Форма фильтров на десктопе: отдельная панель под шапкой,
+     точное положение будет задаваться через JS при клике */
+  .filter-form {
+    position: fixed;
+    top: 80px;      /* запасной вариант, JS переопределит */
+    left: 50px;     /* запасной вариант */
+    right: auto;
+    min-width: 280px;
+    max-width: 360px;
   }
 
   /* Ссылки в меню чуть компактнее на десктопе */

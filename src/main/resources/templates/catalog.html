@@ -110,7 +110,23 @@
         // Фильтры: показать/скрыть панель
         document.querySelector('.filter-button')?.addEventListener('click', (e) => {
             e.stopPropagation();
-            document.querySelector('.filter-form').classList.toggle('active');
+            const form = document.querySelector('.filter-form');
+            if (!form) return;
+
+            // Для десктопа (широкие экраны) позиционируем панель прямо под кнопкой
+            if (window.innerWidth >= 900) {
+                const btnRect = e.currentTarget.getBoundingClientRect();
+                form.style.left = `${btnRect.left}px`;
+                form.style.top = `${btnRect.bottom + window.scrollY + 8}px`; // чуть ниже кнопки
+                form.style.right = 'auto';
+            } else {
+                // На мобильных и планшетах используем блочное расположение (CSS через media)
+                form.style.left = '';
+                form.style.top = '';
+                form.style.right = '';
+            }
+
+            form.classList.toggle('active');
         });
 
         document.addEventListener('click', (e) => {
