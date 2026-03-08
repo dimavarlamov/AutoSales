@@ -6,7 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AutoSales - Каталог автомобилей</title>
     <link th:href="@{/css/style.css}" rel="stylesheet"/>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.1/css/all.min.css"/>
+    <!-- Font Awesome: можно вынести в общий layout, если он есть -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"/>
 </head>
 <body>
 <header class="header">
@@ -20,7 +21,7 @@
                 <button type="submit" class="search-button">Найти</button>
             </form>
             <div class="filter-container">
-                <button class="filter-button">Фильтры</button>
+                <button class="filter-button" type="button">Фильтры</button>
                 <form th:action="@{/catalog}" method="get" class="filter-form" id="filter-form">
                     <!-- Бренд -->
                     <label for="brandId">Марка:</label>
@@ -44,18 +45,15 @@
             </div>
         </div>
         <ul class="nav-menu">
-            <!-- Пункты для всех авторизованных -->
             <li sec:authorize="isAuthenticated()"><a href="/profile" class="nav-link">Профиль</a></li>
             <li sec:authorize="isAuthenticated()"><a href="/profile/orders" class="nav-link">Мои заказы</a></li>
             <li sec:authorize="isAuthenticated()"><a href="/favorites" class="nav-link">Избранное</a></li>
-            <!-- Для админа -->
             <li sec:authorize="hasAuthority('ROLE_ADMIN')"><a href="/admin/dashboard" class="nav-link">Админка</a></li>
-            <!-- Для неавторизованных -->
             <li sec:authorize="!isAuthenticated()"><a href="/auth/login" class="nav-link">Вход</a></li>
             <li sec:authorize="!isAuthenticated()"><a href="/register" class="nav-link">Регистрация</a></li>
-            <!-- Выход -->
             <li sec:authorize="isAuthenticated()">
                 <form th:action="@{/logout}" method="post">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" th:if="${_csrf != null}"/>
                     <button type="submit" class="nav-link" style="background:none; border:none; cursor:pointer;">Выйти</button>
                 </form>
             </li>
@@ -73,17 +71,26 @@
                 <p th:if="${car.stockQuantity > 0}" style="color:green;">В наличии</p>
                 <p th:unless="${car.stockQuantity > 0}" style="color:red;">Нет в наличии</p>
             </a>
-            <!-- Избранное -->
-            <form th:action="@{/favorites/toggle}" method="post">
+
+            <!-- Кнопка избранного (сердечко) -->
+            <form th:action="@{/favorites/toggle}" method="post" class="favorite-form">
                 <input type="hidden" name="carId" th:value="${car.id}"/>
-                <button type="submit" class="favorite-btn"
-                        th:classappend="${favoriteStatus != null and favoriteStatus.get(car.id) ? 'active' : ''}">
-                    <i class="fas fa-heart"></i>
+                <!-- CSRF (если включён) -->
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" th:if="${_csrf != null}"/>
+                <!-- корректный доступ к Map в Thymeleaf: favoriteStatus[car.id] -->
+                <button type="submit"
+                        class="favorite-btn"
+                        th:classappend="${favoriteStatus != null and favoriteStatus[car.id]} ? ' active' : ''"
+                        th:attr="aria-label=${favoriteStatus != null and favoriteStatus[car.id]} ? 'Убрать из избранного' : 'Добавить в избранное'"
+                        th:attrappend="title=${favoriteStatus != null and favoriteStatus[car.id]} ? 'Убрать из избранного' : 'Добавить в избранное'">
+                    <i class="fa-solid fa-heart" aria-hidden="true"></i>
                 </button>
             </form>
+
             <!-- Кнопка подробнее -->
             <a th:href="@{/cars/{id}(id=${car.id})}" class="details-btn">Подробнее</a>
         </div>
+
         <div th:if="${cars.isEmpty()}" class="no-products">
             <p>Автомобили не найдены</p>
         </div>
@@ -93,7 +100,7 @@
     <div class="pagination" th:if="${totalPages > 1}">
         <a th:each="i : ${#numbers.sequence(1, totalPages)}"
            th:href="@{/catalog(page=${i-1}, search=${searchQuery}, brandId=${param.brandId}, minPrice=${param.minPrice}, maxPrice=${param.maxPrice})}"
-           th:class="${currentPage == i-1} ? 'active'"
+           th:class="${currentPage == i-1} ? 'active' : ''"
            th:text="${i}"></a>
     </div>
 </main>

@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <title>Детали заказа</title>
+    <link th:href="@{/css/style.css}" rel="stylesheet"/>
+    <style>
+        /* Локальные стили для страницы "Детали заказа" —
+           использую уникальные классы, чтобы не конфликтовать с глобальными */
+        .order-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .order-info {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .order-items-title {
+            margin: 20px 0 12px;
+            font-size: 1.3rem;
+        }
+
+        .car-card {
+            display: flex;
+            align-items: center;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 15px;
+            background: white;
+            gap: 18px;
+        }
+
+        /* именно этот селектор для картинок заказа — уникальный, чтобы не конфликтовать */
+        .order-car-thumb {
+            flex: 0 0 180px;      /* фиксированная область для превью */
+            width: 180px;
+            height: 110px;
+            object-fit: cover;    /* обрезает изображение красиво */
+            border-radius: 6px;
+            margin: 0;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+        }
+
+        /* Информация о машине занимает оставшееся место */
+        .car-info {
+            flex: 1 1 auto;
+        }
+
+        .car-info h3 {
+            margin-top: 0;
+            margin-bottom: 6px;
+        }
+
+        .car-price {
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        .btn-back {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 8px 16px;
+            background-color: var(--primary-color);
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+        }
+
+        .btn-back:hover {
+            background-color: var(--secondary-color);
+        }
+
+        /* На узких экранах делаем карточки колонками */
+        @media (max-width: 600px) {
+            .car-card {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .order-car-thumb {
+                width: 100%;
+                height: 200px;
+                flex: 0 0 auto;
+                margin-bottom: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+<header class="header">
+    <nav class="nav">
+        <a href="/catalog" class="logo">
+            <img th:src="@{/images/logoAutoSales.jpg}" alt="AutoSales" class="logo-img"/>
+        </a>
+        <ul class="nav-menu">
+            <li sec:authorize="isAuthenticated()"><a href="/profile" class="nav-link">Профиль</a></li>
+            <li sec:authorize="isAuthenticated()"><a href="/profile/orders" class="nav-link">Мои заказы</a></li>
+            <li sec:authorize="isAuthenticated()"><a href="/favorites" class="nav-link">Избранное</a></li>
+            <li sec:authorize="hasAuthority('ROLE_ADMIN')"><a href="/admin/dashboard" class="nav-link">Админка</a></li>
+            <li sec:authorize="!isAuthenticated()"><a href="/auth/login" class="nav-link">Вход</a></li>
+            <li sec:authorize="!isAuthenticated()"><a href="/register" class="nav-link">Регистрация</a></li>
+            <li sec:authorize="isAuthenticated()">
+                <form th:action="@{/logout}" method="post">
+                    <button type="submit" class="nav-link" style="background:none; border:none; cursor:pointer;">Выйти</button>
+                </form>
+            </li>
+        </ul>
+    </nav>
+</header>
+
+<main class="order-container">
+    <h1>Детали покупки № <span th:text="${sale.id}"></span></h1>
+
+    <div class="order-info">
+        <p><strong>Дата заказа:</strong> <span th:text="${#temporals.format(sale.saleDate, 'dd.MM.yyyy HH:mm')}"></span></p>
+        <p><strong>Общая сумма:</strong> <span th:text="${#numbers.formatDecimal(sale.totalAmount, 0, 0) + ' ₽'}"></span></p>
+    </div>
+
+    <h2 class="order-items-title">Приобретённые автомобили</h2>
+
+    <div th:if="${#lists.isEmpty(details)}">
+        <p>В этом заказе нет товаров (ошибка).</p>
+    </div>
+
+    <div th:each="item : ${details}" class="car-card">
+        <!-- используем уникальный класс order-car-thumb, чтобы не конфликтовать с общими стилями -->
+        <img th:src="@{${item.car.image != null ? item.car.image : '/images/no-image.jpg'}}"
+             alt="Фото автомобиля"
+             class="order-car-thumb"/>
+
+        <div class="car-info">
+            <h3 th:text="${item.car.brandName + ' ' + item.car.modelName}">Марка Модель</h3>
+            <p><strong>Цена на момент покупки:</strong>
+                <span class="car-price" th:text="${#numbers.formatDecimal(item.detail.priceAtSale, 0, 0) + ' ₽'}"></span>
+            </p>
+            <p><strong>Количество:</strong> <span th:text="${item.detail.quantity}">1</span></p>
+            <p th:if="${item.car.description != null}"><strong>Описание:</strong> <span th:text="${item.car.description}"></span></p>
+            <!-- Если есть тех. характеристики, можно добавить их сюда -->
+        </div>
+    </div>
+
+    <a href="/profile/orders" class="btn-back">← Назад к списку заказов</a>
+</main>
+</body>
+</html>

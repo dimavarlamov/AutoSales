@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Избранное - AutoSales</title>
+    <link th:href="@{/css/style.css}" rel="stylesheet"/>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"/>
+</head>
+<body>
+<header class="header">
+    <nav class="nav">
+        <a href="/catalog" class="logo">
+            <img th:src="@{/images/logoAutoSales.jpg}" alt="AutoSales" class="logo-img"/>
+        </a>
+        <ul class="nav-menu">
+            <li sec:authorize="isAuthenticated()"><a href="/profile" class="nav-link">Профиль</a></li>
+            <li sec:authorize="isAuthenticated()"><a href="/profile/orders" class="nav-link">Мои заказы</a></li>
+            <li sec:authorize="isAuthenticated()"><a href="/favorites" class="nav-link">Избранное</a></li>
+            <li sec:authorize="hasAuthority('ROLE_ADMIN')"><a href="/admin/dashboard" class="nav-link">Админка</a></li>
+            <li sec:authorize="!isAuthenticated()"><a href="/auth/login" class="nav-link">Вход</a></li>
+            <li sec:authorize="!isAuthenticated()"><a href="/register" class="nav-link">Регистрация</a></li>
+            <li sec:authorize="isAuthenticated()">
+                <form th:action="@{/logout}" method="post">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" th:if="${_csrf != null}"/>
+                    <button type="submit" class="nav-link" style="background:none; border:none; cursor:pointer;">Выйти</button>
+                </form>
+            </li>
+        </ul>
+    </nav>
+</header>
+
+<main>
+    <h1>Избранные автомобили</h1>
+
+    <div th:if="${#lists.isEmpty(favoriteCars)}" class="empty-message" style="text-align: center; padding: 50px;">
+        <i class="fas fa-heart" style="font-size: 3rem; color: #ccc; margin-bottom: 15px;"></i>
+        <p>У вас пока нет избранных автомобилей.</p>
+        <a href="/catalog" class="btn">Перейти в каталог</a>
+    </div>
+
+    <div th:unless="${#lists.isEmpty(favoriteCars)}" class="product-grid">
+        <div th:each="car : ${favoriteCars}" class="product-card">
+            <a th:href="@{/cars/{id}(id=${car.id})}">
+                <img th:src="@{${car.image != null ? car.image : '/images/no-image.jpg'}}" class="product-img" th:alt="${car.brandName + ' ' + car.modelName}"/>
+                <h3 th:text="${car.brandName + ' ' + car.modelName}">Марка Модель</h3>
+                <p class="price" th:text="${#numbers.formatDecimal(car.price, 0, 0) + ' ₽'}">цена</p>
+                <p th:if="${car.stockQuantity > 0}" style="color:green;">В наличии</p>
+                <p th:unless="${car.stockQuantity > 0}" style="color:red;">Нет в наличии</p>
+            </a>
+
+            <!-- Кнопка удалить из избранного (сердечко всегда активное) -->
+            <form th:action="@{/favorites/toggle}" method="post" class="favorite-form">
+                <input type="hidden" name="carId" th:value="${car.id}"/>
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" th:if="${_csrf != null}"/>
+                <button type="submit" class="favorite-btn active" title="Убрать из избранного" aria-label="Убрать из избранного">
+                    <i class="fa-solid fa-heart" aria-hidden="true"></i>
+                </button>
+            </form>
+
+            <a th:href="@{/cars/{id}(id=${car.id})}" class="details-btn">Подробнее</a>
+        </div>
+    </div>
+</main>
+</body>
+</html>
