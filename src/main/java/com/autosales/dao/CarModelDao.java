@@ -114,4 +114,14 @@ public class CarModelDao {
         String sql = "DELETE FROM models WHERE model_id = ?";
         jdbcTemplate.update(sql, id);
     }
+
+    public List<String> findDistinctEngineTypes() {
+        String sql = "SELECT DISTINCT engine_type FROM models WHERE engine_type IS NOT NULL ORDER BY engine_type";
+        return jdbcTemplate.queryForList(sql, String.class);
+    }
+
+    public List<String> findDistinctBodyTypes() {
+        String sql = "SELECT DISTINCT body_type FROM models WHERE body_type IS NOT NULL ORDER BY body_type";
+        return jdbcTemplate.queryForList(sql, String.class);
+    }
 }

@@ -774,6 +774,8 @@ h1 {
     box-shadow: var(--box-shadow);
     z-index: 1000;
     min-width: 250px;
+    max-height: 70vh;
+    overflow-y: auto;
 }
 
 .filter-form.active {

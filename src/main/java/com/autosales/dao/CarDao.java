@@ -209,4 +209,217 @@ public class CarDao {
 
         return jdbcTemplate.queryForObject(sql.toString(), params.toArray(), Integer.class);
     }
+
+    /**
+     * Расширенный поиск для каталога с учётом характеристик и модели.
+     * Не используется в админке, чтобы не сломать существующую логику.
+     */
+    public List<Car> findWithAdvancedFilters(String search,
+                                             Integer brandId,
+                                             Integer modelId,
+                                             BigDecimal minPrice,
+                                             BigDecimal maxPrice,
+                                             String country,
+                                             String steeringSide,
+                                             String engineType,
+                                             Integer yearFrom,
+                                             Integer yearTo,
+                                             Integer mileageFrom,
+                                             Integer mileageTo,
+                                             Integer hpFrom,
+                                             Integer hpTo,
+                                             String bodyType,
+                                             String color,
+                                             Boolean airConditioning,
+                                             int page,
+                                             int size) {
+        StringBuilder sql = new StringBuilder(
+                "SELECT c.*, b.name AS brand_name, b.country AS brand_country, m.name AS model_name " +
+                        "FROM cars c " +
+                        "JOIN models m ON c.model_id = m.model_id " +
+                        "JOIN brands b ON m.brand_id = b.brand_id " +
+                        "LEFT JOIN car_specifications cs ON cs.car_id = c.car_id " +
+                        "WHERE 1=1 "
+        );
+
+        List<Object> params = new ArrayList<>();
+
+        if (search != null && !search.trim().isEmpty()) {
+            sql.append("AND (b.name LIKE ? OR m.name LIKE ?) ");
+            String like = "%" + search + "%";
+            params.add(like);
+            params.add(like);
+        }
+        if (brandId != null && brandId > 0) {
+            sql.append("AND b.brand_id = ? ");
+            params.add(brandId);
+        }
+        if (modelId != null && modelId > 0) {
+            sql.append("AND m.model_id = ? ");
+            params.add(modelId);
+        }
+        if (minPrice != null) {
+            sql.append("AND c.price >= ? ");
+            params.add(minPrice);
+        }
+        if (maxPrice != null) {
+            sql.append("AND c.price <= ? ");
+            params.add(maxPrice);
+        }
+        if (country != null && !country.isBlank()) {
+            sql.append("AND b.country = ? ");
+            params.add(country);
+        }
+        if (steeringSide != null && !steeringSide.isBlank()) {
+            sql.append("AND m.steering_wheel_side = ? ");
+            params.add(steeringSide);
+        }
+        if (engineType != null && !engineType.isBlank()) {
+            sql.append("AND m.engine_type = ? ");
+            params.add(engineType);
+        }
+        if (yearFrom != null) {
+            sql.append("AND cs.year >= ? ");
+            params.add(yearFrom);
+        }
+        if (yearTo != null) {
+            sql.append("AND cs.year <= ? ");
+            params.add(yearTo);
+        }
+        if (mileageFrom != null) {
+            sql.append("AND cs.mileage >= ? ");
+            params.add(mileageFrom);
+        }
+        if (mileageTo != null) {
+            sql.append("AND cs.mileage <= ? ");
+            params.add(mileageTo);
+        }
+        if (hpFrom != null) {
+            sql.append("AND cs.horsepower >= ? ");
+            params.add(hpFrom);
+        }
+        if (hpTo != null) {
+            sql.append("AND cs.horsepower <= ? ");
+            params.add(hpTo);
+        }
+        if (bodyType != null && !bodyType.isBlank()) {
+            sql.append("AND m.body_type = ? ");
+            params.add(bodyType);
+        }
+        if (color != null && !color.isBlank()) {
+            sql.append("AND cs.color = ? ");
+            params.add(color);
+        }
+        if (airConditioning != null) {
+            sql.append("AND cs.air_conditioning = ? ");
+            params.add(airConditioning);
+        }
+
+        sql.append("ORDER BY c.car_id DESC LIMIT ? OFFSET ?");
+        params.add(size);
+        params.add(page * size);
+
+        return jdbcTemplate.query(sql.toString(), new CarRowMapper(), params.toArray());
+    }
+
+    public int countWithAdvancedFilters(String search,
+                                        Integer brandId,
+                                        Integer modelId,
+                                        BigDecimal minPrice,
+                                        BigDecimal maxPrice,
+                                        String country,
+                                        String steeringSide,
+                                        String engineType,
+                                        Integer yearFrom,
+                                        Integer yearTo,
+                                        Integer mileageFrom,
+                                        Integer mileageTo,
+                                        Integer hpFrom,
+                                        Integer hpTo,
+                                        String bodyType,
+                                        String color,
+                                        Boolean airConditioning) {
+        StringBuilder sql = new StringBuilder(
+                "SELECT COUNT(*) FROM cars c " +
+                        "JOIN models m ON c.model_id = m.model_id " +
+                        "JOIN brands b ON m.brand_id = b.brand_id " +
+                        "LEFT JOIN car_specifications cs ON cs.car_id = c.car_id " +
+                        "WHERE 1=1 "
+        );
+
+        List<Object> params = new ArrayList<>();
+
+        if (search != null && !search.trim().isEmpty()) {
+            sql.append("AND (b.name LIKE ? OR m.name LIKE ?) ");
+            String like = "%" + search + "%";
+            params.add(like);
+            params.add(like);
+        }
+        if (brandId != null && brandId > 0) {
+            sql.append("AND b.brand_id = ? ");
+            params.add(brandId);
+        }
+        if (modelId != null && modelId > 0) {
+            sql.append("AND m.model_id = ? ");
+            params.add(modelId);
+        }
+        if (minPrice != null) {
+            sql.append("AND c.price >= ? ");
+            params.add(minPrice);
+        }
+        if (maxPrice != null) {
+            sql.append("AND c.price <= ? ");
+            params.add(maxPrice);
+        }
+        if (country != null && !country.isBlank()) {
+            sql.append("AND b.country = ? ");
+            params.add(country);
+        }
+        if (steeringSide != null && !steeringSide.isBlank()) {
+            sql.append("AND m.steering_wheel_side = ? ");
+            params.add(steeringSide);
+        }
+        if (engineType != null && !engineType.isBlank()) {
+            sql.append("AND m.engine_type = ? ");
+            params.add(engineType);
+        }
+        if (yearFrom != null) {
+            sql.append("AND cs.year >= ? ");
+            params.add(yearFrom);
+        }
+        if (yearTo != null) {
+            sql.append("AND cs.year <= ? ");
+            params.add(yearTo);
+        }
+        if (mileageFrom != null) {
+            sql.append("AND cs.mileage >= ? ");
+            params.add(mileageFrom);
+        }
+        if (mileageTo != null) {
+            sql.append("AND cs.mileage <= ? ");
+            params.add(mileageTo);
+        }
+        if (hpFrom != null) {
+            sql.append("AND cs.horsepower >= ? ");
+            params.add(hpFrom);
+        }
+        if (hpTo != null) {
+            sql.append("AND cs.horsepower <= ? ");
+            params.add(hpTo);
+        }
+        if (bodyType != null && !bodyType.isBlank()) {
+            sql.append("AND m.body_type = ? ");
+            params.add(bodyType);
+        }
+        if (color != null && !color.isBlank()) {
+            sql.append("AND cs.color = ? ");
+            params.add(color);
+        }
+        if (airConditioning != null) {
+            sql.append("AND cs.air_conditioning = ? ");
+            params.add(airConditioning);
+        }
+
+        return jdbcTemplate.queryForObject(sql.toString(), params.toArray(), Integer.class);
+    }
 }

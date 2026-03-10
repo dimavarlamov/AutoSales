@@ -71,4 +71,9 @@ public class CarSpecificationDao {
         String sql = "DELETE FROM car_specifications WHERE car_id = ?";
         jdbcTemplate.update(sql, carId);
     }
+
+    public List<String> findDistinctColors() {
+        String sql = "SELECT DISTINCT color FROM car_specifications WHERE color IS NOT NULL ORDER BY color";
+        return jdbcTemplate.queryForList(sql, String.class);
+    }
 }

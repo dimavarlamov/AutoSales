@@ -32,11 +32,96 @@
                                 th:text="${brand.name}"
                                 th:selected="${param.brandId != null and param.brandId[0] == brand.id}"></option>
                     </select>
+
+                    <!-- Модель -->
+                    <label for="modelId">Модель:</label>
+                    <select name="modelId" id="modelId">
+                        <option value="">Все модели</option>
+                        <option th:each="m : ${models}"
+                                th:value="${m.id}"
+                                th:text="${m.brandName + ' ' + m.name}"
+                                th:selected="${param.modelId != null and param.modelId[0] == m.id}"></option>
+                    </select>
+
+                    <!-- Страна производителя -->
+                    <label for="country">Страна производителя:</label>
+                    <select name="country" id="country">
+                        <option value="">Все страны</option>
+                        <option th:each="c : ${countries}"
+                                th:value="${c}"
+                                th:text="${c}"
+                                th:selected="${param.country != null and param.country[0] == c}"></option>
+                    </select>
+
+                    <!-- Руль -->
+                    <label for="steeringSide">Руль:</label>
+                    <select name="steeringSide" id="steeringSide">
+                        <option value="">Любой</option>
+                        <option value="LEFT" th:selected="${param.steeringSide != null and param.steeringSide[0] == 'LEFT'}">Левый</option>
+                        <option value="RIGHT" th:selected="${param.steeringSide != null and param.steeringSide[0] == 'RIGHT'}">Правый</option>
+                    </select>
+
+                    <!-- Тип двигателя -->
+                    <label for="engineType">Тип двигателя:</label>
+                    <select name="engineType" id="engineType">
+                        <option value="">Любой</option>
+                        <option th:each="opt : ${engineTypeOptions}"
+                                th:value="${opt.code}"
+                                th:text="${opt.name}"
+                                th:selected="${param.engineType != null and param.engineType[0] == opt.code}"></option>
+                    </select>
+
                     <!-- Цена -->
                     <label for="minPrice">Мин. цена:</label>
                     <input type="number" name="minPrice" id="minPrice" min="0" th:value="${param.minPrice}"/>
                     <label for="maxPrice">Макс. цена:</label>
                     <input type="number" name="maxPrice" id="maxPrice" min="0" th:value="${param.maxPrice}"/>
+
+                    <!-- Год выпуска -->
+                    <label for="yearFrom">Год выпуска от:</label>
+                    <input type="number" name="yearFrom" id="yearFrom" min="1900" th:value="${param.yearFrom}"/>
+                    <label for="yearTo">Год выпуска до:</label>
+                    <input type="number" name="yearTo" id="yearTo" min="1900" th:value="${param.yearTo}"/>
+
+                    <!-- Пробег -->
+                    <label for="mileageFrom">Пробег от, км:</label>
+                    <input type="number" name="mileageFrom" id="mileageFrom" min="0" th:value="${param.mileageFrom}"/>
+                    <label for="mileageTo">Пробег до, км:</label>
+                    <input type="number" name="mileageTo" id="mileageTo" min="0" th:value="${param.mileageTo}"/>
+
+                    <!-- Мощность -->
+                    <label for="hpFrom">Мощность от, л.с.:</label>
+                    <input type="number" name="hpFrom" id="hpFrom" min="0" th:value="${param.hpFrom}"/>
+                    <label for="hpTo">Мощность до, л.с.:</label>
+                    <input type="number" name="hpTo" id="hpTo" min="0" th:value="${param.hpTo}"/>
+
+                    <!-- Тип кузова -->
+                    <label for="bodyType">Кузов:</label>
+                    <select name="bodyType" id="bodyType">
+                        <option value="">Любой</option>
+                        <option th:each="bt : ${bodyTypes}"
+                                th:value="${bt}"
+                                th:text="${bt}"
+                                th:selected="${param.bodyType != null and param.bodyType[0] == bt}"></option>
+                    </select>
+
+                    <!-- Цвет -->
+                    <label for="color">Цвет:</label>
+                    <select name="color" id="color">
+                        <option value="">Любой</option>
+                        <option th:each="cl : ${colors}"
+                                th:value="${cl}"
+                                th:text="${cl}"
+                                th:selected="${param.color != null and param.color[0] == cl}"></option>
+                    </select>
+
+                    <!-- Кондиционер -->
+                    <label for="airConditioning">Кондиционер:</label>
+                    <select name="airConditioning" id="airConditioning">
+                        <option value="">Не важно</option>
+                        <option value="true" th:selected="${param.airConditioning != null and param.airConditioning[0] == 'true'}">Да</option>
+                        <option value="false" th:selected="${param.airConditioning != null and param.airConditioning[0] == 'false'}">Нет</option>
+                    </select>
                     <div class="button-group">
                         <button type="submit" class="apply-btn">Применить</button>
                         <button type="button" class="reset-btn" onclick="window.location.href='/catalog'">Сбросить</button>
@@ -98,8 +183,8 @@
 
     <!-- Пагинация -->
     <div class="pagination" th:if="${totalPages > 1}">
-        <a th:each="i : ${#numbers.sequence(1, totalPages)}"
-           th:href="@{/catalog(page=${i-1}, search=${searchQuery}, brandId=${param.brandId}, minPrice=${param.minPrice}, maxPrice=${param.maxPrice})}"
+            <a th:each="i : ${#numbers.sequence(1, totalPages)}"
+           th:href="@{/catalog(page=${i-1}, search=${searchQuery}, brandId=${param.brandId}, modelId=${param.modelId}, country=${param.country}, steeringSide=${param.steeringSide}, engineType=${param.engineType}, minPrice=${param.minPrice}, maxPrice=${param.maxPrice}, yearFrom=${param.yearFrom}, yearTo=${param.yearTo}, mileageFrom=${param.mileageFrom}, mileageTo=${param.mileageTo}, hpFrom=${param.hpFrom}, hpTo=${param.hpTo}, bodyType=${param.bodyType}, color=${param.color}, airConditioning=${param.airConditioning})}"
            th:class="${currentPage == i-1} ? 'active' : ''"
            th:text="${i}"></a>
     </div>
