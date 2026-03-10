@@ -33,7 +33,6 @@ public class ProfileController {
                                 User updatedUser,
                                 RedirectAttributes redirectAttributes) {
         User existing = userService.getUserByEmail(currentUser.getUsername());
-        // Обновляем только разрешённые поля
         existing.setFirstName(updatedUser.getFirstName());
         existing.setLastName(updatedUser.getLastName());
         existing.setPatronymic(updatedUser.getPatronymic());
@@ -41,7 +40,6 @@ public class ProfileController {
         existing.setPassportNumber(updatedUser.getPassportNumber());
         existing.setAddress(updatedUser.getAddress());
         existing.setPhone(updatedUser.getPhone());
-        existing.setPaymentTypeDefault(updatedUser.getPaymentTypeDefault());
 
         userService.updateProfile(existing.getId(), existing);
         redirectAttributes.addFlashAttribute("success", "Данные профиля обновлены");

@@ -37,7 +37,6 @@ public class UserDao {
             user.setPassportNumber(rs.getString("passport_number"));
             user.setAddress(rs.getString("address"));
             user.setPhone(rs.getString("phone"));
-            user.setPaymentTypeDefault(rs.getString("payment_type_default"));
             user.setRoleId(rs.getInt("role_id"));
             user.setEnabled(rs.getBoolean("enabled"));
             user.setBalance(rs.getBigDecimal("balance"));
@@ -71,15 +70,15 @@ public class UserDao {
 
     public User save(User user) {
         String sql = "INSERT INTO users (email, password_hash, first_name, last_name, patronymic, " +
-                "passport_series, passport_number, address, phone, payment_type_default, " +
+                "passport_series, passport_number, address, phone, " + // payment_type_default удалён
                 "role_id, enabled, balance, created_at, updated_at) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())";
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())";
 
         System.out.println("SQL: " + sql);
         System.out.println("Params: " + user.getEmail() + ", " + user.getPasswordHash() + ", " +
                 user.getFirstName() + ", " + user.getLastName() + ", " + user.getPatronymic() + ", " +
                 user.getPassportSeries() + ", " + user.getPassportNumber() + ", " + user.getAddress() + ", " +
-                user.getPhone() + ", " + user.getPaymentTypeDefault() + ", " + user.getRoleId() + ", " +
+                user.getPhone() + ", " + user.getRoleId() + ", " +
                 user.getEnabled() + ", " + user.getBalance());
 
         KeyHolder keyHolder = new GeneratedKeyHolder();
@@ -94,10 +93,9 @@ public class UserDao {
             ps.setString(7, user.getPassportNumber());
             ps.setString(8, user.getAddress());
             ps.setString(9, user.getPhone());
-            ps.setString(10, user.getPaymentTypeDefault());
-            ps.setInt(11, user.getRoleId());
-            ps.setBoolean(12, user.getEnabled() != null ? user.getEnabled() : true);
-            ps.setBigDecimal(13, user.getBalance());
+            ps.setInt(10, user.getRoleId());
+            ps.setBoolean(11, user.getEnabled() != null ? user.getEnabled() : true);
+            ps.setBigDecimal(12, user.getBalance());
             return ps;
         }, keyHolder);
 
@@ -125,7 +123,6 @@ public class UserDao {
                 user.getPassportNumber(),
                 user.getAddress(),
                 user.getPhone(),
-                user.getPaymentTypeDefault(),
                 user.getRoleId(),
                 user.getEnabled(),
                 user.getBalance(),

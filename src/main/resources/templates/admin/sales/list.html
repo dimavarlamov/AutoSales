@@ -9,19 +9,73 @@
 <div class="admin-page">
     <h1>Продажи</h1>
     <a href="/admin/dashboard" class="top-left-button">Назад</a>
+
+    <!-- Фильтры продаж -->
+    <form th:action="@{/admin/sales}" method="get" class="filter-form" style="margin-bottom: 1.5rem;">
+        <div style="display:flex; flex-wrap:wrap; gap:0.75rem;">
+            <input type="number" step="0.01" name="minAmount" placeholder="Мин. сумма"
+                   th:value="${minAmount}" />
+            <input type="number" step="0.01" name="maxAmount" placeholder="Макс. сумма"
+                   th:value="${maxAmount}" />
+
+            <input type="date" name="startDate" th:value="${startDate}" />
+            <input type="date" name="endDate" th:value="${endDate}" />
+
+            <select name="brandId">
+                <option value="">Все марки</option>
+                <option th:each="brand : ${brands}"
+                        th:value="${brand.id}"
+                        th:text="${brand.name}"
+                        th:selected="${selectedBrandId == brand.id}"></option>
+            </select>
+
+            <select name="modelId">
+                <option value="">Все модели</option>
+                <option th:each="m : ${models}"
+                        th:value="${m.id}"
+                        th:text="${m.name}"
+                        th:selected="${selectedModelId == m.id}"></option>
+            </select>
+
+            <button type="submit">Применить</button>
+            <button type="button" onclick="window.location.href='/admin/sales'">Сбросить</button>
+        </div>
+    </form>
+
     <table class="manage-table">
         <thead>
-        <tr><th>ID</th><th>Пользователь</th><th>Дата</th><th>Сумма</th><th>Действия</th></tr>
+        <tr>
+            <th>Марка</th>
+            <th>Модель</th>
+            <th>Фото</th>
+            <th>Покупатель</th>
+            <th>Сумма продажи</th>
+            <th>Дата продажи</th>
+            <th></th>
+        </tr>
         </thead>
         <tbody>
-        <tr th:each="sale : ${sales}">
-            <td th:text="${sale.id}"></td>
-            <td th:text="${sale.userId}"></td>
-            <td th:text="${sale.saleDate}"></td>
-            <td th:text="${sale.totalAmount}"></td>
-            <td th:text="${sale.status}"></td>
-            <td th:text="${sale.paymentType}"></td>
-            <td><a th:href="@{/admin/sales/{id}(id=${sale.id})}">Детали</a></td>
+        <tr th:each="row : ${sales}">
+            <td th:text="${row.brandName}"></td>
+            <td th:text="${row.modelName}"></td>
+            <td>
+                <img th:src="@{${row.carImage != null ? row.carImage : '/images/no-image.jpg'}}"
+                     class="product-thumb" alt=""/>
+            </td>
+            <td>
+                <a th:href="@{/admin/users/{id}(id=${row.userId})}"
+                   th:text="${row.userFullName}"
+                   class="nav-link" style="color: var(--primary-color); padding: 0;">
+                </a>
+            </td>
+            <td th:text="${row.totalAmount} + ' ₽'"></td>
+            <td th:text="${row.saleDate}"></td>
+            <td>
+                <a th:href="@{/cars/{id}(id=${row.carId})}" class="btn">Детали</a>
+            </td>
+        </tr>
+        <tr th:if="${#lists.isEmpty(sales)}">
+            <td colspan="7" style="text-align:center;">Продажи не найдены</td>
         </tr>
         </tbody>
     </table>

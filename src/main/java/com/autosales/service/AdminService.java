@@ -1,7 +1,6 @@
 package com.autosales.service;
 
 import com.autosales.dao.*;
-import com.autosales.model.Car;
 import com.autosales.model.Sale;
 import com.autosales.model.User;
 import lombok.RequiredArgsConstructor;
@@ -9,8 +8,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.HashMap;
-import java.util.List;
+    import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -109,5 +109,18 @@ public class AdminService {
                 .filter(u -> u.getRoleId() == 1) // ROLE_CUSTOMER
                 .filter(u -> search == null || u.getEmail().contains(search) || u.getLastName().contains(search))
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * Продажи для админ-панели с фильтрами.
+     */
+    @Transactional(readOnly = true)
+    public List<Map<String, Object>> getSalesWithFilters(BigDecimal minAmount,
+                                                         BigDecimal maxAmount,
+                                                         LocalDate startDate,
+                                                         LocalDate endDate,
+                                                         Integer brandId,
+                                                         Integer modelId) {
+        return saleDao.findSalesWithFilters(minAmount, maxAmount, startDate, endDate, brandId, modelId);
     }
 }

@@ -12,8 +12,12 @@ import java.sql.PreparedStatement;
 import java.sql.Statement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Repository
@@ -100,5 +104,66 @@ public class SaleDao {
     public void delete(Integer id) {
         String sql = "DELETE FROM sales WHERE sale_id = ?";
         jdbcTemplate.update(sql, id);
+    }
+
+    /**
+     * Поиск продаж с деталями автомобиля и фильтрами для админ-панели.
+     * Каждая строка соответствует одной записи "продажа + конкретный автомобиль".
+     */
+    public List<Map<String, Object>> findSalesWithFilters(BigDecimal minAmount,
+                                                          BigDecimal maxAmount,
+                                                          LocalDate startDate,
+                                                          LocalDate endDate,
+                                                          Integer brandId,
+                                                          Integer modelId) {
+        StringBuilder sql = new StringBuilder(
+                "SELECT s.sale_id      AS saleId, " +
+                        "s.sale_date    AS saleDate, " +
+                        "s.total_amount AS totalAmount, " +
+                        "s.user_id      AS userId, " +
+                        "CONCAT_WS(' ', u.last_name, u.first_name, u.patronymic) AS userFullName, " +
+                        "c.car_id       AS carId, " +
+                        "c.image        AS carImage, " +
+                        "b.name         AS brandName, " +
+                        "m.name         AS modelName " +
+                        "FROM sales s " +
+                        "JOIN users u        ON s.user_id = u.user_id " +
+                        "JOIN sale_details sd ON s.sale_id = sd.sale_id " +
+                        "JOIN cars c         ON sd.car_id = c.car_id " +
+                        "JOIN models m       ON c.model_id = m.model_id " +
+                        "JOIN brands b       ON m.brand_id = b.brand_id " +
+                        "WHERE 1=1 "
+        );
+
+        List<Object> params = new ArrayList<>();
+
+        if (minAmount != null) {
+            sql.append(" AND s.total_amount >= ? ");
+            params.add(minAmount);
+        }
+        if (maxAmount != null) {
+            sql.append(" AND s.total_amount <= ? ");
+            params.add(maxAmount);
+        }
+        if (startDate != null) {
+            sql.append(" AND s.sale_date >= ? ");
+            params.add(Timestamp.valueOf(startDate.atStartOfDay()));
+        }
+        if (endDate != null) {
+            sql.append(" AND s.sale_date < ? ");
+            params.add(Timestamp.valueOf(endDate.plusDays(1).atStartOfDay()));
+        }
+        if (brandId != null) {
+            sql.append(" AND m.brand_id = ? ");
+            params.add(brandId);
+        }
+        if (modelId != null) {
+            sql.append(" AND m.model_id = ? ");
+            params.add(modelId);
+        }
+
+        sql.append(" ORDER BY s.sale_date DESC ");
+
+        return jdbcTemplate.queryForList(sql.toString(), params.toArray());
     }
 }

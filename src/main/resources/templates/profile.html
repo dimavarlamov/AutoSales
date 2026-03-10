@@ -33,6 +33,7 @@
             <h2 class="auth-title">Профиль пользователя</h2>
 
             <div th:if="${success}" class="success fade-in" th:text="${success}"></div>
+            <p class="auth-link">Баланс: <span th:text="${user.balance}"></span> ₽</p>
 
             <form th:action="@{/profile/update}" method="post" class="auth-form">
                 <div class="input-group">
@@ -73,16 +74,6 @@
                 <div class="input-group">
                     <input type="tel" name="phone" th:value="${user.phone}" pattern="\+7 \d{3} \d{3} \d{2} \d{2}" title="Формат: +7 XXX XXX XX XX"/>
                     <label>Телефон</label>
-                </div>
-
-                <div class="input-group">
-                    <select name="paymentTypeDefault">
-                        <option value="">Не выбран</option>
-                        <option value="cash" th:selected="${user.paymentTypeDefault == 'cash'}">Наличные</option>
-                        <option value="bank_transfer" th:selected="${user.paymentTypeDefault == 'bank_transfer'}">Перечисление</option>
-                        <option value="credit" th:selected="${user.paymentTypeDefault == 'credit'}">Кредит</option>
-                    </select>
-                    <label>Предпочтительный способ оплаты</label>
                 </div>
 
                 <button type="submit" class="auth-button">Сохранить изменения</button>

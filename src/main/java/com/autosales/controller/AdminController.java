@@ -269,9 +269,25 @@ public class AdminController {
     }
 
     @GetMapping("/sales")
-    public String sales(Model model) {
-        List<Sale> sales = saleDao.findAll();
+    public String sales(@RequestParam(required = false) BigDecimal minAmount,
+                        @RequestParam(required = false) BigDecimal maxAmount,
+                        @RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) java.time.LocalDate startDate,
+                        @RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) java.time.LocalDate endDate,
+                        @RequestParam(required = false) Integer brandId,
+                        @RequestParam(required = false) Integer modelId,
+                        Model model) {
+        List<Map<String, Object>> sales = adminService.getSalesWithFilters(minAmount, maxAmount, startDate, endDate, brandId, modelId);
         model.addAttribute("sales", sales);
+        model.addAttribute("brands", brandService.getAllBrands());
+        model.addAttribute("models", modelId != null || brandId != null
+                ? modelService.getAllModels()
+                : modelService.getAllModels());
+        model.addAttribute("minAmount", minAmount);
+        model.addAttribute("maxAmount", maxAmount);
+        model.addAttribute("startDate", startDate);
+        model.addAttribute("endDate", endDate);
+        model.addAttribute("selectedBrandId", brandId);
+        model.addAttribute("selectedModelId", modelId);
         return "admin/sales/list";
     }
 

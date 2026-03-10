@@ -55,7 +55,6 @@ public class UserService {
 
         user.setBalance(BigDecimal.valueOf(100000.00));
         user.setEnabled(false);
-        user.setPaymentTypeDefault(null);
 
         System.out.println("=== UserService.register ===");
         System.out.println("Email: " + dto.getEmail());
@@ -140,7 +139,6 @@ public class UserService {
         existing.setPassportNumber(updated.getPassportNumber());
         existing.setAddress(updated.getAddress());
         existing.setPhone(updated.getPhone());
-        existing.setPaymentTypeDefault(updated.getPaymentTypeDefault());
         userDao.update(existing);
     }
 

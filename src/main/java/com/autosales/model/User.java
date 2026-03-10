@@ -16,7 +16,6 @@ public class User {
     private String passportNumber;
     private String address;
     private String phone;
-    private String paymentTypeDefault;
     private Integer roleId;
     private Boolean enabled;
     private BigDecimal balance;
