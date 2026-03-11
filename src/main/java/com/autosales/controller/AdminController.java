@@ -342,4 +342,5 @@ public class AdminController {
     public List<CarModel> getModelsByBrand(@PathVariable Integer brandId) {
         return modelService.getModelsByBrand(brandId);
     }
+
 }
