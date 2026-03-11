@@ -110,7 +110,7 @@ public class UserDao {
 
     public void update(User user) {
         String sql = "UPDATE users SET email = ?, password_hash = ?, first_name = ?, last_name = ?, patronymic = ?, " +
-                "passport_series = ?, passport_number = ?, address = ?, phone = ?, payment_type_default = ?, " +
+                "passport_series = ?, passport_number = ?, address = ?, phone = ?, " +
                 "role_id = ?, enabled = ?, balance = ?, updated_at = NOW() " +
                 "WHERE user_id = ?";
         jdbcTemplate.update(sql,

@@ -31,6 +31,7 @@ public class AdminController {
     private final SaleDetailDao saleDetailDao;
     private final FileStorageService fileStorageService;
     private final CarSpecificationDao carSpecificationDao;
+    private final UserService userService;
 
     // ------ Дашборд ------
     @GetMapping("/dashboard")
@@ -67,6 +68,19 @@ public class AdminController {
         adminService.updateUserRole(id, roleId);
         redirectAttributes.addFlashAttribute("success", "Роль пользователя обновлена");
         return "redirect:/admin/users";
+    }
+
+    @PostMapping("/users/{id}/balance")
+    public String updateUserBalance(@PathVariable Integer id,
+                                    @RequestParam BigDecimal balance,
+                                    RedirectAttributes redirectAttributes) {
+        try {
+            userService.updateBalance(id, balance);
+            redirectAttributes.addFlashAttribute("success", "Баланс пользователя обновлён");
+        } catch (IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+        }
+        return "redirect:/admin/users/" + id;
     }
 
     // ------ Управление автомобилями ------

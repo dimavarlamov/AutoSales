@@ -23,6 +23,13 @@
         <p><strong>Роль:</strong> <span th:text="${user.roleId == 1 ? 'Покупатель' : (user.roleId == 2 ? 'Админ' : 'Неизвестно')}"></span></p>
         <p><strong>Статус:</strong> <span th:text="${user.enabled ? 'Активен' : 'Заблокирован'}"></span></p>
     </div>
+    <!-- Форма изменения баланса -->
+    <form th:action="@{/admin/users/{id}/balance(id=${user.id})}" method="post" style="margin: 20px 0;">
+        <label for="balance">Изменить баланс (₽):</label>
+        <input type="number" step="0.01" min="0" name="balance" id="balance" required
+               th:value="${user.balance}" style="padding: 5px; width: 150px;"/>
+        <button type="submit" class="btn" style="padding: 5px 15px;">Сохранить</button>
+    </form>
     <form th:action="@{/admin/users/{id}/toggle(id=${user.id})}" method="post">
         <button type="submit" class="btn">Заблокировать/Разблокировать</button>
     </form>

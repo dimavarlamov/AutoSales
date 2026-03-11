@@ -148,4 +148,14 @@ public class UserService {
         user.setPasswordHash(passwordEncoder.encode(newPassword));
         userDao.update(user);
     }
+
+    @Transactional
+    public void updateBalance(Integer userId, BigDecimal newBalance) {
+        if (newBalance == null || newBalance.compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("Баланс не может быть отрицательным");
+        }
+        User user = getUserById(userId);
+        user.setBalance(newBalance);
+        userDao.update(user);
+    }
 }
