@@ -1,7 +1,9 @@
 package com.autosales.controller;
 
 import com.autosales.model.User;
+import com.autosales.service.AuditLogService;
 import com.autosales.service.UserService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -20,6 +22,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 public class ProfileController {
 
     private final UserService userService;
+    private final AuditLogService auditLogService;
 
     @GetMapping
     public String profile(@AuthenticationPrincipal UserDetails currentUser, Model model) {
@@ -31,8 +34,12 @@ public class ProfileController {
     @PostMapping("/update")
     public String updateProfile(@AuthenticationPrincipal UserDetails currentUser,
                                 User updatedUser,
-                                RedirectAttributes redirectAttributes) {
+                                RedirectAttributes redirectAttributes,
+                                HttpServletRequest request) {
         User existing = userService.getUserByEmail(currentUser.getUsername());
+        String oldData = "Имя: " + existing.getFirstName() + ", Фамилия: " + existing.getLastName() +
+                ", Серия паспорта: " + existing.getPassportSeries() + ", Номер: " + existing.getPassportNumber() +
+                ", Телефон: " + existing.getPhone();
         existing.setFirstName(updatedUser.getFirstName());
         existing.setLastName(updatedUser.getLastName());
         existing.setPatronymic(updatedUser.getPatronymic());
@@ -40,8 +47,13 @@ public class ProfileController {
         existing.setPassportNumber(updatedUser.getPassportNumber());
         existing.setAddress(updatedUser.getAddress());
         existing.setPhone(updatedUser.getPhone());
-
         userService.updateProfile(existing.getId(), existing);
+
+        String newData = "Имя: " + existing.getFirstName() + ", Фамилия: " + existing.getLastName() +
+                ", Серия паспорта: " + existing.getPassportSeries() + ", Номер: " + existing.getPassportNumber() +
+                ", Телефон: " + existing.getPhone();
+        auditLogService.logAction("UPDATE_PROFILE", "users", existing.getId(),
+                oldData, newData, request);
         redirectAttributes.addFlashAttribute("success", "Данные профиля обновлены");
         return "redirect:/profile";
     }

@@ -3,6 +3,7 @@ package com.autosales.controller;
 import com.autosales.dao.*;
 import com.autosales.model.*;
 import com.autosales.service.*;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
@@ -32,6 +33,7 @@ public class AdminController {
     private final FileStorageService fileStorageService;
     private final CarSpecificationDao carSpecificationDao;
     private final UserService userService;
+    private final AuditLogService auditLogService;
 
     @GetMapping("/dashboard")
     public String dashboard() {
@@ -52,28 +54,27 @@ public class AdminController {
         return "admin/users/details";
     }
 
-    @PostMapping("/users/{id}/toggle")
-    public String toggleUserEnabled(@PathVariable Integer id, RedirectAttributes redirectAttributes) {
-        adminService.toggleUserEnabled(id);
-        redirectAttributes.addFlashAttribute("success", "Статус пользователя изменён");
-        return "redirect:/admin/users";
-    }
-
     @PostMapping("/users/{id}/role")
-    public String updateUserRole(@PathVariable Integer id,
-                                 @RequestParam Integer roleId,
-                                 RedirectAttributes redirectAttributes) {
+    public String updateUserRole(@PathVariable Integer id, @RequestParam Integer roleId,
+                                 RedirectAttributes redirectAttributes, HttpServletRequest request) {
+        User user = adminService.getUserById(id);
+        Integer oldRoleId = user.getRoleId();
         adminService.updateUserRole(id, roleId);
+        auditLogService.logAction("UPDATE_ROLE", "users", id,
+                "Роль ID=" + oldRoleId, "Роль ID=" + roleId, request);
         redirectAttributes.addFlashAttribute("success", "Роль пользователя обновлена");
         return "redirect:/admin/users";
     }
 
     @PostMapping("/users/{id}/balance")
-    public String updateUserBalance(@PathVariable Integer id,
-                                    @RequestParam BigDecimal balance,
-                                    RedirectAttributes redirectAttributes) {
+    public String updateUserBalance(@PathVariable Integer id, @RequestParam BigDecimal balance,
+                                    RedirectAttributes redirectAttributes, HttpServletRequest request) {
+        User user = adminService.getUserById(id);
+        BigDecimal oldBalance = user.getBalance();
         try {
             userService.updateBalance(id, balance);
+            auditLogService.logAction("UPDATE_BALANCE", "users", id,
+                    "Баланс: " + oldBalance, "Баланс: " + balance, request);
             redirectAttributes.addFlashAttribute("success", "Баланс пользователя обновлён");
         } catch (IllegalArgumentException e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
@@ -177,7 +178,11 @@ public class AdminController {
     }
 
     @PostMapping("/cars/delete/{id}")
-    public String deleteCar(@PathVariable Integer id, RedirectAttributes redirectAttributes) {
+    public String deleteCar(@PathVariable Integer id, RedirectAttributes redirectAttributes, HttpServletRequest request) {
+        Car car = carService.getCarById(id);
+        auditLogService.logAction("DELETE", "cars", id,
+                "Автомобиль ID=" + id + ", название: " + car.getBrandName() + " " + car.getModelName(),
+                null, request);
         carService.deleteCar(id);
         redirectAttributes.addFlashAttribute("success", "Автомобиль удалён");
         return "redirect:/admin/cars";
@@ -217,7 +222,10 @@ public class AdminController {
     }
 
     @PostMapping("/brands/delete/{id}")
-    public String deleteBrand(@PathVariable Integer id, RedirectAttributes redirectAttributes) {
+    public String deleteBrand(@PathVariable Integer id, RedirectAttributes redirectAttributes, HttpServletRequest request) {
+        Brand brand = brandService.getBrandById(id);
+        auditLogService.logAction("DELETE", "brands", id,
+                "Марка: " + brand.getName(), null, request);
         brandService.deleteBrand(id);
         redirectAttributes.addFlashAttribute("success", "Марка удалена");
         return "redirect:/admin/brands";
@@ -267,7 +275,10 @@ public class AdminController {
     }
 
     @PostMapping("/models/delete/{id}")
-    public String deleteModel(@PathVariable Integer id, RedirectAttributes redirectAttributes) {
+    public String deleteModel(@PathVariable Integer id, RedirectAttributes redirectAttributes, HttpServletRequest request) {
+        CarModel model = modelService.getModelById(id);
+        auditLogService.logAction("DELETE", "models", id,
+                "Модель: " + model.getName() + " (ID марки " + model.getBrandId() + ")", null, request);
         modelService.deleteModel(id);
         redirectAttributes.addFlashAttribute("success", "Модель удалена");
         return "redirect:/admin/models";
@@ -344,6 +355,19 @@ public class AdminController {
     @ResponseBody
     public List<CarModel> getModelsByBrand(@PathVariable Integer brandId) {
         return modelService.getModelsByBrand(brandId);
+    }
+
+    @PostMapping("/users/{id}/toggle")
+    public String toggleUserEnabled(@PathVariable Integer id, RedirectAttributes redirectAttributes, HttpServletRequest request) {
+        User user = adminService.getUserById(id);
+        boolean oldStatus = user.getEnabled();
+        adminService.toggleUserEnabled(id);
+        String newStatus = !oldStatus ? "активирован" : "заблокирован";
+        auditLogService.logAction("TOGGLE_ENABLED", "users", id,
+                "Был " + (oldStatus ? "активен" : "заблокирован"),
+                "Стал " + newStatus, request);
+        redirectAttributes.addFlashAttribute("success", "Статус пользователя изменён");
+        return "redirect:/admin/users";
     }
 
 }
