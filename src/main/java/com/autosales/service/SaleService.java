@@ -43,14 +43,12 @@ public class SaleService {
             throw new IllegalStateException("Недостаточно средств на балансе");
         }
 
-        // Создаём продажу
         Sale sale = new Sale();
         sale.setUserId(userId);
         sale.setSaleDate(LocalDateTime.now());
         sale.setTotalAmount(total);
         Sale savedSale = saleDao.save(sale);
 
-        // Детали продажи
         SaleDetail detail = new SaleDetail();
         detail.setSaleId(savedSale.getId());
         detail.setCarId(carId);
@@ -58,7 +56,6 @@ public class SaleService {
         detail.setPriceAtSale(car.getPrice());
         saleDetailDao.save(detail);
 
-        // Уменьшаем остаток и баланс
         car.setStockQuantity(car.getStockQuantity() - 1);
         carDao.update(car);
 

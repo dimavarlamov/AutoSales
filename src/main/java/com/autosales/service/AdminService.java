@@ -25,7 +25,6 @@ public class AdminService {
     private final CarModelDao carModelDao;
     private final SaleDetailDao saleDetailDao;
 
-    // ------ Управление пользователями ------
     @Transactional(readOnly = true)
     public List<User> getAllUsers() {
         return userDao.findAll();
@@ -50,37 +49,23 @@ public class AdminService {
         userDao.update(user);
     }
 
-    // ------ Отчёты ------
-
-    /**
-     * 1. Информация о наличии автомобилей определённой марки и модели.
-     */
     @Transactional(readOnly = true)
     public List<Map<String, Object>> getCarsInStockByBrandAndModel(String brandName, String modelName) {
         // TODO: реализовать при необходимости
         return List.of();
     }
 
-    /**
-     * 2. Технические данные заданной модели.
-     */
     @Transactional(readOnly = true)
     public List<Map<String, Object>> getTechnicalDataByModel(String modelName) {
         // TODO: реализовать при необходимости
         return List.of();
     }
 
-    /**
-     * 3. Информация обо всех проданных моделях некоторой марки.
-     */
     @Transactional(readOnly = true)
     public List<Sale> getSoldCarsByBrand(Integer brandId) {
         return saleDao.findSoldByBrand(brandId);
     }
 
-    /**
-     * 4. Сумма продаж моделей каждой марки и общая сумма.
-     */
     @Transactional(readOnly = true)
     public Map<String, Object> getSalesSummary() {
         BigDecimal total = saleDao.getTotalSalesAmount();
@@ -100,20 +85,15 @@ public class AdminService {
         return result;
     }
 
-    /**
-     * 5. Полная или частичная информация о клиентах.
-     */
     @Transactional(readOnly = true)
     public List<User> getCustomers(String search) {
         return userDao.findAll().stream()
-                .filter(u -> u.getRoleId() == 1) // ROLE_CUSTOMER
+                .filter(u -> u.getRoleId() == 1)
                 .filter(u -> search == null || u.getEmail().contains(search) || u.getLastName().contains(search))
                 .collect(Collectors.toList());
     }
 
-    /**
-     * Продажи для админ-панели с фильтрами.
-     */
+
     @Transactional(readOnly = true)
     public List<Map<String, Object>> getSalesWithFilters(BigDecimal minAmount,
                                                          BigDecimal maxAmount,

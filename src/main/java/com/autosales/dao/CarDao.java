@@ -210,10 +210,6 @@ public class CarDao {
         return jdbcTemplate.queryForObject(sql.toString(), params.toArray(), Integer.class);
     }
 
-    /**
-     * Расширенный поиск для каталога с учётом характеристик и модели.
-     * Не используется в админке, чтобы не сломать существующую логику.
-     */
     public List<Car> findWithAdvancedFilters(String search,
                                              Integer brandId,
                                              Integer modelId,

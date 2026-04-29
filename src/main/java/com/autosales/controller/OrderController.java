@@ -43,22 +43,17 @@ public class OrderController {
     public String orderDetails(@PathVariable Integer id,
                                @AuthenticationPrincipal UserDetails currentUser,
                                Model model) {
-        // Получаем заказ
         Sale sale = saleDao.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Заказ не найден"));
 
-        // Получаем текущего пользователя
         User user = userService.getUserByEmail(currentUser.getUsername());
 
-        // Проверяем, что заказ принадлежит текущему пользователю
         if (!sale.getUserId().equals(user.getId())) {
             throw new AccessDeniedException("У вас нет прав для просмотра этого заказа");
         }
 
-        // Загружаем детали заказа
         List<SaleDetail> details = saleDetailDao.findBySaleId(id);
 
-        // Для каждого детали получаем полную информацию об автомобиле
         List<SaleDetailWithCar> detailWithCars = details.stream()
                 .map(d -> {
                     Car car = carDao.findById(d.getCarId())
@@ -73,7 +68,6 @@ public class OrderController {
         return "order-details";
     }
 
-    // Вспомогательный класс для передачи в шаблон
     @lombok.Data
     @lombok.AllArgsConstructor
     public static class SaleDetailWithCar {

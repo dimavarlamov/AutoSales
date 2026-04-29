@@ -45,7 +45,6 @@ public class SaleDetailDao {
         return jdbcTemplate.query(sql, new SaleDetailRowMapper(), carId);
     }
 
-    // Синоним для findBySaleId (можно оставить или удалить)
     public List<SaleDetail> findDetailsBySaleId(Integer saleId) {
         return findBySaleId(saleId);
     }

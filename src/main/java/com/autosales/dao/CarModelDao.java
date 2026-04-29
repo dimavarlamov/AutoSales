@@ -40,7 +40,7 @@ public class CarModelDao {
             try {
                 model.setBrandName(rs.getString("brand_name"));
             } catch (SQLException e) {
-                // ignore
+
             }
             return model;
         }

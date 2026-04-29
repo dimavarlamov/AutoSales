@@ -37,8 +37,7 @@ public class CarService {
     @Transactional(readOnly = true)
     public List<Car> searchCars(String query, Integer brandId, Integer modelId,
                                 BigDecimal minPrice, BigDecimal maxPrice, Boolean inStockOnly) {
-        // Здесь можно реализовать сложный поиск через DAO
-        // Для простоты пока заглушка
+
         return carDao.findAll();
     }
 
@@ -78,7 +77,6 @@ public class CarService {
 
     @Transactional
     public void deleteCar(Integer id) {
-        // проверка, не используется ли в активных продажах
         carSpecificationDao.delete(id);
         carDao.delete(id);
     }

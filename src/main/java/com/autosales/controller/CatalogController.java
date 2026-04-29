@@ -119,14 +119,12 @@ public class CatalogController {
         List<String> bodyTypes = carModelDao.findDistinctBodyTypes();
         List<String> colors = carSpecificationDao.findDistinctColors();
 
-        // список стран для фильтрации по стране производителя
         List<String> countries = brands.stream()
                 .map(Brand::getCountry)
                 .filter(Objects::nonNull)
                 .distinct()
                 .toList();
 
-        // Безопасное построение favoriteStatus
         Map<Integer, Boolean> favoriteStatus = new HashMap<>();
         if (currentUser != null) {
             User user = userService.getUserByEmail(currentUser.getUsername());
@@ -138,7 +136,6 @@ public class CatalogController {
                 favoriteStatus.put(car.getId(), favoriteCarIds.contains(car.getId()));
             }
         } else {
-            // для неавторизованных все false
             for (Car car : cars) {
                 favoriteStatus.put(car.getId(), false);
             }
@@ -158,7 +155,7 @@ public class CatalogController {
         for (String et : engineTypes) {
             Map<String, String> option = new HashMap<>();
             option.put("code", et);
-            option.put("name", translation.getOrDefault(et, et)); // если вдруг появится другое значение
+            option.put("name", translation.getOrDefault(et, et));
             engineTypeOptions.add(option);
         }
         model.addAttribute("engineTypeOptions", engineTypeOptions);

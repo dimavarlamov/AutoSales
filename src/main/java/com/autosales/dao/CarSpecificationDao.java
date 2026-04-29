@@ -29,7 +29,7 @@ public class CarSpecificationDao {
             spec.setColor(rs.getString("color"));
             spec.setAirConditioning(rs.getBoolean("air_conditioning"));
             spec.setYear(rs.getInt("year"));
-            spec.setMileage(rs.getInt("mileage")); // добавлено
+            spec.setMileage(rs.getInt("mileage"));
             return spec;
         }
     }
@@ -49,7 +49,7 @@ public class CarSpecificationDao {
                 spec.getColor(),
                 spec.getAirConditioning(),
                 spec.getYear(),
-                spec.getMileage() // добавлено
+                spec.getMileage()
         );
         return spec;
     }
@@ -62,7 +62,7 @@ public class CarSpecificationDao {
                 spec.getColor(),
                 spec.getAirConditioning(),
                 spec.getYear(),
-                spec.getMileage(), // добавлено
+                spec.getMileage(),
                 spec.getCarId()
         );
     }

@@ -58,7 +58,6 @@ public class SaleDao {
         return jdbcTemplate.query(sql, new SaleRowMapper());
     }
 
-    // Для отчёта "проданные модели по марке"
     public List<Sale> findSoldByBrand(Integer brandId) {
         String sql = "SELECT DISTINCT s.* FROM sales s " +
                 "JOIN sale_details sd ON s.sale_id = sd.sale_id " +
@@ -69,13 +68,11 @@ public class SaleDao {
         return jdbcTemplate.query(sql, new SaleRowMapper(), brandId);
     }
 
-    // Общая сумма продаж
     public BigDecimal getTotalSalesAmount() {
         String sql = "SELECT COALESCE(SUM(total_amount), 0) FROM sales";
         return jdbcTemplate.queryForObject(sql, BigDecimal.class);
     }
 
-    // Сумма продаж по бренду
     public BigDecimal getTotalSalesAmountByBrand(Integer brandId) {
         String sql = "SELECT COALESCE(SUM(s.total_amount), 0) FROM sales s " +
                 "JOIN sale_details sd ON s.sale_id = sd.sale_id " +
@@ -106,10 +103,6 @@ public class SaleDao {
         jdbcTemplate.update(sql, id);
     }
 
-    /**
-     * Поиск продаж с деталями автомобиля и фильтрами для админ-панели.
-     * Каждая строка соответствует одной записи "продажа + конкретный автомобиль".
-     */
     public List<Map<String, Object>> findSalesWithFilters(BigDecimal minAmount,
                                                           BigDecimal maxAmount,
                                                           LocalDate startDate,

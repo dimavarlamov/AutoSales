@@ -33,13 +33,11 @@ public class AdminController {
     private final CarSpecificationDao carSpecificationDao;
     private final UserService userService;
 
-    // ------ Дашборд ------
     @GetMapping("/dashboard")
     public String dashboard() {
         return "admin/dashboard";
     }
 
-    // ------ Управление пользователями ------
     @GetMapping("/users")
     public String users(@RequestParam(required = false) String search, Model model) {
         List<User> users = adminService.getAllUsers();
@@ -83,7 +81,6 @@ public class AdminController {
         return "redirect:/admin/users/" + id;
     }
 
-    // ------ Управление автомобилями ------
     @GetMapping("/cars")
     public String cars(@RequestParam(required = false) String search,
                        @RequestParam(required = false) Integer brandId,
@@ -125,7 +122,6 @@ public class AdminController {
         model.addAttribute("brands", brandService.getAllBrands());
         model.addAttribute("models", modelService.getModelsByBrand(carModel.getBrandId()));
 
-        // Добавляем спецификацию
         CarSpecification spec = carSpecificationDao.findByCarId(id).orElse(null);
         model.addAttribute("spec", spec);
 
@@ -157,23 +153,20 @@ public class AdminController {
                             @RequestParam("imageFile") MultipartFile imageFile,
                             RedirectAttributes redirectAttributes) {
         try {
-            // Получаем существующий автомобиль из БД
             Car existingCar = carService.getCarById(car.getId());
 
-            // Обновляем поля из формы
             existingCar.setModelId(modelId);
             existingCar.setPrice(car.getPrice());
             existingCar.setStockQuantity(car.getStockQuantity());
             existingCar.setExpectedDate(car.getExpectedDate());
             existingCar.setDescription(car.getDescription());
 
-            // Обработка изображения
             if (!imageFile.isEmpty()) {
-                // Если загружен новый файл, сохраняем его и обновляем путь
+
                 String imagePath = fileStorageService.storeFile(imageFile);
                 existingCar.setImage(imagePath);
             }
-            // Если файл не загружен, оставляем старое изображение (уже есть в existingCar)
+
 
             carService.updateCar(existingCar);
             redirectAttributes.addFlashAttribute("success", "Автомобиль обновлён");
@@ -190,7 +183,6 @@ public class AdminController {
         return "redirect:/admin/cars";
     }
 
-    // ------ Управление марками ------
     @GetMapping("/brands")
     public String brands(Model model) {
         model.addAttribute("brands", brandService.getAllBrands());
@@ -231,7 +223,6 @@ public class AdminController {
         return "redirect:/admin/brands";
     }
 
-    // ------ Управление моделями ------
     @GetMapping("/models")
     public String models(@RequestParam(required = false) Integer brandId, Model model) {
         List<CarModel> models;
@@ -312,7 +303,6 @@ public class AdminController {
         return "admin/sales/details";
     }
 
-    // ------ Отчёты ------
     @GetMapping("/reports/availability")
     public String reportAvailability(@RequestParam(required = false) String brandName,
                                      @RequestParam(required = false) String modelName,
@@ -328,7 +318,6 @@ public class AdminController {
     @GetMapping("/reports/techdata")
     public String reportTechData(@RequestParam(required = false) Integer modelId, Model model) {
         if (modelId != null) {
-            // нужно реализовать метод в AdminService или CarSpecificationDao
         }
         model.addAttribute("models", modelService.getAllModels());
         return "admin/reports/techdata";

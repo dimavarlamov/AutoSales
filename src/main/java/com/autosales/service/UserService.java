@@ -61,7 +61,7 @@ public class UserService {
         System.out.println("FirstName: " + dto.getFirstName());
         System.out.println("LastName: " + dto.getLastName());
         System.out.println("Patronymic: " + dto.getPatronymic());
-        System.out.println("Password hash: " + user.getPasswordHash()); // осторожно, но для отладки можно
+        System.out.println("Password hash: " + user.getPasswordHash());
         System.out.println("RoleId: " + user.getRoleId());
         System.out.println("Balance: " + user.getBalance());
         System.out.println("Enabled: " + user.getEnabled());

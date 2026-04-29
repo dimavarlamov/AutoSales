@@ -48,7 +48,6 @@ public class CarPhotoController {
         } catch (IOException e) {
             redirectAttributes.addFlashAttribute("error", "Ошибка при загрузке: " + e.getMessage());
         }
-        // Добавляем параметр timestamp, чтобы браузер не кешировал страницу
         return "redirect:/admin/cars/{carId}/photos?t=" + System.currentTimeMillis();
     }
 
@@ -65,7 +64,6 @@ public class CarPhotoController {
     public String setMainPhoto(@PathVariable Integer carId,
                                @PathVariable Integer imageId,
                                RedirectAttributes redirectAttributes) {
-        // Получаем путь к фото
         CarImage image = carService.getCarImages(carId).stream()
                 .filter(img -> img.getId().equals(imageId))
                 .findFirst()

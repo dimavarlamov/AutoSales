@@ -29,7 +29,7 @@ public class CustomUserDetailsService implements UserDetailsService {
                 .username(user.getEmail())
                 .password(user.getPasswordHash())
                 .disabled(!user.getEnabled())
-                .authorities(role.getName()) // роль уже с префиксом ROLE_
+                .authorities(role.getName())
                 .build();
     }
 }

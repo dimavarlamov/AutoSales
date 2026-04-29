@@ -17,7 +17,7 @@ public class RegistrationDto {
     @Pattern(regexp = "^[A-Za-zА-Яа-я]{2,}$", message = "Фамилия должна содержать минимум 2 буквы")
     private String lastName;
 
-    private String patronymic; // отчество необязательно
+    private String patronymic;
 
     @NotBlank(message = "Email обязателен")
     @Email(message = "Введите корректный email")

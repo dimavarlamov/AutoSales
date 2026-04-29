@@ -44,6 +44,5 @@ public class EmailService {
     }
 
     public void sendSaleNotification(String to, Integer saleId, String status) {
-        // опционально
     }
 }
