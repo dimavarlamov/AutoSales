@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.security.Principal;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.List;
@@ -41,16 +42,26 @@ public class AdminController {
     }
 
     @GetMapping("/users")
-    public String users(@RequestParam(required = false) String search, Model model) {
+    public String users(@RequestParam(required = false) String search,
+                        Model model,
+                        Principal principal) {
         List<User> users = adminService.getAllUsers();
+
         model.addAttribute("users", users);
+        addCurrentUserIdToModel(model, principal);
+
         return "admin/users/list";
     }
 
     @GetMapping("/users/{id}")
-    public String userDetails(@PathVariable Integer id, Model model) {
+    public String userDetails(@PathVariable Integer id,
+                              Model model,
+                              Principal principal) {
         User user = adminService.getUserById(id);
+
         model.addAttribute("user", user);
+        addCurrentUserIdToModel(model, principal);
+
         return "admin/users/details";
     }
 
@@ -358,16 +369,48 @@ public class AdminController {
     }
 
     @PostMapping("/users/{id}/toggle")
-    public String toggleUserEnabled(@PathVariable Integer id, RedirectAttributes redirectAttributes, HttpServletRequest request) {
+    public String toggleUserEnabled(@PathVariable Integer id,
+                                    RedirectAttributes redirectAttributes,
+                                    HttpServletRequest request,
+                                    Principal principal) {
+
+        Integer currentUserId = getCurrentUserId(principal);
+
+        if (currentUserId != null && currentUserId.equals(id)) {
+            redirectAttributes.addFlashAttribute(
+                    "error",
+                    "Нельзя заблокировать или разблокировать собственную учётную запись"
+            );
+            return "redirect:/admin/users/" + id;
+        }
+
         User user = adminService.getUserById(id);
+
         boolean oldStatus = user.getEnabled();
+
         adminService.toggleUserEnabled(id);
+
         String newStatus = !oldStatus ? "активирован" : "заблокирован";
+
         auditLogService.logAction("TOGGLE_ENABLED", "users", id,
                 "Был " + (oldStatus ? "активен" : "заблокирован"),
                 "Стал " + newStatus, request);
+
         redirectAttributes.addFlashAttribute("success", "Статус пользователя изменён");
+
         return "redirect:/admin/users";
+    }
+
+    private Integer getCurrentUserId(Principal principal) {
+        if (principal == null) {
+            return null;
+        }
+
+        return userService.getUserByEmail(principal.getName()).getId();
+    }
+
+    private void addCurrentUserIdToModel(Model model, Principal principal) {
+        model.addAttribute("currentUserId", getCurrentUserId(principal));
     }
 
 }

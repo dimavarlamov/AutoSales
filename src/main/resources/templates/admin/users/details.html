@@ -9,6 +9,15 @@
 <div class="admin-page">
     <h1>Пользователь</h1>
     <a href="/admin/users" class="top-left-button">Назад</a>
+    <div th:if="${error}"
+         style="margin: 15px 0; padding: 10px; background-color: #ffe5e5; border: 1px solid #ffb3b3; border-radius: 6px; color: #8a0000;"
+         th:text="${error}">
+    </div>
+
+    <div th:if="${success}"
+         style="margin: 15px 0; padding: 10px; background-color: #e6ffed; border: 1px solid #9ae6b4; border-radius: 6px; color: #14532d;"
+         th:text="${success}">
+    </div>
     <div class="user-details">
         <p><strong>ID:</strong> <span th:text="${user.id}"></span></p>
         <p><strong>Email:</strong> <span th:text="${user.email}"></span></p>
@@ -30,10 +39,21 @@
                th:value="${user.balance}" style="padding: 5px; width: 150px;"/>
         <button type="submit" class="btn" style="padding: 5px 15px;">Сохранить</button>
     </form>
-    <form th:action="@{/admin/users/{id}/toggle(id=${user.id})}" method="post">
+
+    <form th:if="${user.id != currentUserId}"
+          th:action="@{/admin/users/{id}/toggle(id=${user.id})}"
+          method="post">
+
         <button type="submit" class="btn">Заблокировать/Разблокировать</button>
+
     </form>
-    <!-- Форма смены роли (упрощённо) -->
+
+    <p th:if="${user.id == currentUserId}"
+       style="margin: 20px 0; color: #777;">
+        Это ваша учётная запись. Заблокировать или разблокировать самого себя нельзя.
+    </p>
+
+    <!-- Форма смены роли  -->
     <form th:action="@{/admin/users/{id}/role(id=${user.id})}" method="post">
         <select name="roleId">
             <option value="1">Покупатель</option>
