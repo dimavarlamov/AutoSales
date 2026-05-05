@@ -10,6 +10,9 @@
     <h1>Автомобили</h1>
     <a href="/admin/dashboard" class="top-left-button">Назад</a>
     <a href="/admin/cars/new" class="btn">Добавить автомобиль</a>
+    <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+
+    <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
 
     <!-- Простая форма поиска/фильтрации -->
     <form th:action="@{/admin/cars}" method="get" class="filter-form">

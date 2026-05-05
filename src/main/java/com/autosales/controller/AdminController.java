@@ -11,6 +11,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.dao.DataIntegrityViolationException;
 
 import java.security.Principal;
 import java.io.IOException;
@@ -189,13 +190,61 @@ public class AdminController {
     }
 
     @PostMapping("/cars/delete/{id}")
-    public String deleteCar(@PathVariable Integer id, RedirectAttributes redirectAttributes, HttpServletRequest request) {
+    public String deleteCar(@PathVariable Integer id,
+                            RedirectAttributes redirectAttributes,
+                            HttpServletRequest request) {
+
         Car car = carService.getCarById(id);
-        auditLogService.logAction("DELETE", "cars", id,
-                "Автомобиль ID=" + id + ", название: " + car.getBrandName() + " " + car.getModelName(),
-                null, request);
-        carService.deleteCar(id);
-        redirectAttributes.addFlashAttribute("success", "Автомобиль удалён");
+        String carName = (car.getBrandName() + " " + car.getModelName()).trim();
+
+        if (adminService.isCarLinkedToSale(id)) {
+            redirectAttributes.addFlashAttribute(
+                    "error",
+                    "Нельзя удалить автомобиль «" + carName + "», потому что он уже забронирован."
+            );
+
+            auditLogService.logAction(
+                    "DELETE_DENIED",
+                    "cars",
+                    id,
+                    "Попытка удаления автомобиля ID=" + id + ", название: " + carName,
+                    "Удаление запрещено: автомобиль связан с продажей",
+                    request
+            );
+
+            return "redirect:/admin/cars";
+        }
+
+        try {
+            carService.deleteCar(id);
+
+            auditLogService.logAction(
+                    "DELETE",
+                    "cars",
+                    id,
+                    "Автомобиль ID=" + id + ", название: " + carName,
+                    null,
+                    request
+            );
+
+            redirectAttributes.addFlashAttribute("success", "Автомобиль удалён");
+
+        } catch (DataIntegrityViolationException e) {
+            redirectAttributes.addFlashAttribute(
+                    "error",
+                    "Нельзя удалить автомобиль «" + carName + "», потому что он связан с продажей или другим объектом базы данных."
+            );
+
+            auditLogService.logAction(
+                    "DELETE_DENIED",
+                    "cars",
+                    id,
+                    "Попытка удаления автомобиля ID=" + id + ", название: " + carName,
+                    "Удаление запрещено ограничением внешнего ключа",
+                    request
+            );
+        }
+
         return "redirect:/admin/cars";
     }
 

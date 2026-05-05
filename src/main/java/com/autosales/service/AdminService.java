@@ -50,6 +50,11 @@ public class AdminService {
     }
 
     @Transactional(readOnly = true)
+    public boolean isCarLinkedToSale(Integer carId) {
+        return !saleDetailDao.findByCarId(carId).isEmpty();
+    }
+
+    @Transactional(readOnly = true)
     public List<Map<String, Object>> getCarsInStockByBrandAndModel(String brandName, String modelName) {
         // TODO: реализовать при необходимости
         return List.of();
