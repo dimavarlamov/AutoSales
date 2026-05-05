@@ -6,11 +6,13 @@
     <title th:unless="${model.id == null}">Редактирование модели</title>
     <link th:href="@{/css/style.css}" rel="stylesheet"/>
 </head>
+<script th:src="@{/js/admin-validation.js}"></script>
 <body>
 <div class="admin-page">
     <h1 th:if="${model.id == null}">Добавить модель</h1>
     <h1 th:unless="${model.id == null}">Редактировать модель</h1>
     <a href="/admin/models" class="top-left-button">Назад</a>
+    <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
     <form th:action="@{${model.id == null} ? '/admin/models/save' : '/admin/models/update'}" method="post">
         <input type="hidden" name="id" th:value="${model.id}" th:if="${model.id != null}"/>
         <div class="input-group">
@@ -22,7 +24,12 @@
         </div>
         <div class="input-group">
             <label>Название модели:</label>
-            <input type="text" name="name" th:value="${model.name}" required/>
+            <input type="text"
+                   name="name"
+                   th:value="${model.name}"
+                   required
+                   data-max-length="100"
+                   data-field-name="Название модели"/>
         </div>
         <div class="input-group">
             <label>Тип усилителя руля:</label>
@@ -61,7 +68,12 @@
         </div>
         <div class="input-group">
             <label>Тип кузова:</label>
-            <input type="text" name="bodyType" th:value="${model.bodyType}" required/>
+            <input type="text"
+                   name="bodyType"
+                   th:value="${model.bodyType}"
+                   required
+                   data-max-length="50"
+                   data-field-name="Тип кузова"/>
         </div>
         <div class="input-group">
             <label>Количество дверей:</label>

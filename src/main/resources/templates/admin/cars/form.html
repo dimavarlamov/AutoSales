@@ -6,11 +6,13 @@
     <title th:unless="${car.id == null}">Редактирование автомобиля</title>
     <link th:href="@{/css/style.css}" rel="stylesheet"/>
 </head>
+<script th:src="@{/js/admin-validation.js}"></script>
 <body>
 <div class="admin-page">
     <h1 th:if="${car.id == null}">Добавить автомобиль</h1>
     <h1 th:unless="${car.id == null}">Редактировать автомобиль</h1>
     <a href="/admin/cars" class="top-left-button">Назад</a>
+    <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
 
     <form th:action="@{${car.id == null} ? '/admin/cars/save' : '/admin/cars/update'}" method="post" enctype="multipart/form-data">
         <input type="hidden" name="id" th:value="${car.id}" th:if="${car.id != null}"/>
@@ -56,7 +58,10 @@
 
         <div class="input-group">
             <label>Описание:</label>
-            <textarea name="description" th:text="${car.description}"></textarea>
+            <textarea name="description"
+                      th:text="${car.description}"
+                      data-max-length="5000"
+                      data-field-name="Описание автомобиля"></textarea>
         </div>
 
         <div class="input-group">

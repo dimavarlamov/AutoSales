@@ -37,6 +37,12 @@ public class AdminController {
     private final UserService userService;
     private final AuditLogService auditLogService;
 
+    private static final int BRAND_NAME_MAX_LENGTH = 15;
+    private static final int BRAND_COUNTRY_MAX_LENGTH = 15;
+    private static final int MODEL_NAME_MAX_LENGTH = 15;
+    private static final int MODEL_BODY_TYPE_MAX_LENGTH = 15;
+    private static final int CAR_DESCRIPTION_MAX_LENGTH = 1000;
+
     @GetMapping("/dashboard")
     public String dashboard() {
         return "admin/dashboard";
@@ -145,9 +151,16 @@ public class AdminController {
     public String saveCar(@ModelAttribute Car car,
                           @RequestParam Integer modelId,
                           @RequestParam("imageFile") MultipartFile imageFile,
-                          RedirectAttributes redirectAttributes) {
+                          RedirectAttributes redirectAttributes,
+                          Model viewModel) {
+        car.setModelId(modelId);
+
+        String validationError = validateCarForm(car);
+
+        if (validationError != null) {
+            return returnCarFormWithError(car, modelId, viewModel, validationError);
+        }
         try {
-            car.setModelId(modelId);
             if (!imageFile.isEmpty()) {
                 String imagePath = fileStorageService.storeFile(imageFile);
                 car.setImage(imagePath);
@@ -157,6 +170,14 @@ public class AdminController {
         } catch (IOException e) {
             redirectAttributes.addFlashAttribute("error", "Ошибка при загрузке файла: " + e.getMessage());
         }
+        catch (DataIntegrityViolationException e) {
+            return returnCarFormWithError(
+                    car,
+                    modelId,
+                    viewModel,
+                    "Не удалось сохранить автомобиль. Проверьте корректность и длину введённых данных."
+            );
+        }
         return "redirect:/admin/cars";
     }
 
@@ -164,7 +185,15 @@ public class AdminController {
     public String updateCar(@ModelAttribute Car car,
                             @RequestParam Integer modelId,
                             @RequestParam("imageFile") MultipartFile imageFile,
-                            RedirectAttributes redirectAttributes) {
+                            RedirectAttributes redirectAttributes,
+                            Model viewModel) {
+        car.setModelId(modelId);
+
+        String validationError = validateCarForm(car);
+
+        if (validationError != null) {
+            return returnCarFormWithError(car, modelId, viewModel, validationError);
+        }
         try {
             Car existingCar = carService.getCarById(car.getId());
 
@@ -185,6 +214,14 @@ public class AdminController {
             redirectAttributes.addFlashAttribute("success", "Автомобиль обновлён");
         } catch (IOException e) {
             redirectAttributes.addFlashAttribute("error", "Ошибка при загрузке файла: " + e.getMessage());
+        }
+        catch (DataIntegrityViolationException e) {
+            return returnCarFormWithError(
+                    car,
+                    modelId,
+                    viewModel,
+                    "Не удалось обновить автомобиль. Проверьте корректность и длину введённых данных."
+            );
         }
         return "redirect:/admin/cars";
     }
@@ -261,10 +298,30 @@ public class AdminController {
     }
 
     @PostMapping("/brands/save")
-    public String saveBrand(@ModelAttribute Brand brand, RedirectAttributes redirectAttributes) {
-        brandService.saveBrand(brand);
-        redirectAttributes.addFlashAttribute("success", "Марка добавлена");
-        return "redirect:/admin/brands";
+    public String saveBrand(@ModelAttribute Brand brand,
+                            Model viewModel,
+                            RedirectAttributes redirectAttributes) {
+
+        String validationError = validateBrandForm(brand);
+
+        if (validationError != null) {
+            return returnBrandFormWithError(brand, viewModel, validationError);
+        }
+
+        try {
+            brandService.saveBrand(brand);
+
+            redirectAttributes.addFlashAttribute("success", "Марка добавлена");
+
+            return "redirect:/admin/brands";
+
+        } catch (DataIntegrityViolationException e) {
+            return returnBrandFormWithError(
+                    brand,
+                    viewModel,
+                    "Не удалось сохранить марку. Проверьте длину полей и уникальность названия."
+            );
+        }
     }
 
     @GetMapping("/brands/edit/{id}")
@@ -275,10 +332,30 @@ public class AdminController {
     }
 
     @PostMapping("/brands/update")
-    public String updateBrand(@ModelAttribute Brand brand, RedirectAttributes redirectAttributes) {
-        brandService.updateBrand(brand);
-        redirectAttributes.addFlashAttribute("success", "Марка обновлена");
-        return "redirect:/admin/brands";
+    public String updateBrand(@ModelAttribute Brand brand,
+                              Model viewModel,
+                              RedirectAttributes redirectAttributes) {
+
+        String validationError = validateBrandForm(brand);
+
+        if (validationError != null) {
+            return returnBrandFormWithError(brand, viewModel, validationError);
+        }
+
+        try {
+            brandService.updateBrand(brand);
+
+            redirectAttributes.addFlashAttribute("success", "Марка обновлена");
+
+            return "redirect:/admin/brands";
+
+        } catch (DataIntegrityViolationException e) {
+            return returnBrandFormWithError(
+                    brand,
+                    viewModel,
+                    "Не удалось обновить марку. Проверьте длину полей и уникальность названия."
+            );
+        }
     }
 
     @PostMapping("/brands/delete/{id}")
@@ -313,10 +390,30 @@ public class AdminController {
     }
 
     @PostMapping("/models/save")
-    public String saveModel(@ModelAttribute CarModel model, RedirectAttributes redirectAttributes) {
-        modelService.saveModel(model);
-        redirectAttributes.addFlashAttribute("success", "Модель добавлена");
-        return "redirect:/admin/models";
+    public String saveModel(@ModelAttribute("model") CarModel carModel,
+                            Model viewModel,
+                            RedirectAttributes redirectAttributes) {
+
+        String validationError = validateModelForm(carModel);
+
+        if (validationError != null) {
+            return returnModelFormWithError(carModel, viewModel, validationError);
+        }
+
+        try {
+            modelService.saveModel(carModel);
+
+            redirectAttributes.addFlashAttribute("success", "Модель добавлена");
+
+            return "redirect:/admin/models";
+
+        } catch (DataIntegrityViolationException e) {
+            return returnModelFormWithError(
+                    carModel,
+                    viewModel,
+                    "Не удалось сохранить модель. Проверьте длину полей и уникальность модели для выбранной марки."
+            );
+        }
     }
 
     @GetMapping("/models/edit/{id}")
@@ -328,10 +425,30 @@ public class AdminController {
     }
 
     @PostMapping("/models/update")
-    public String updateModel(@ModelAttribute CarModel model, RedirectAttributes redirectAttributes) {
-        modelService.updateModel(model);
-        redirectAttributes.addFlashAttribute("success", "Модель обновлена");
-        return "redirect:/admin/models";
+    public String updateModel(@ModelAttribute("model") CarModel carModel,
+                              Model viewModel,
+                              RedirectAttributes redirectAttributes) {
+
+        String validationError = validateModelForm(carModel);
+
+        if (validationError != null) {
+            return returnModelFormWithError(carModel, viewModel, validationError);
+        }
+
+        try {
+            modelService.updateModel(carModel);
+
+            redirectAttributes.addFlashAttribute("success", "Модель обновлена");
+
+            return "redirect:/admin/models";
+
+        } catch (DataIntegrityViolationException e) {
+            return returnModelFormWithError(
+                    carModel,
+                    viewModel,
+                    "Не удалось обновить модель. Проверьте длину полей и уникальность модели для выбранной марки."
+            );
+        }
     }
 
     @PostMapping("/models/delete/{id}")
@@ -540,6 +657,103 @@ public class AdminController {
         }
 
         return "по " + endDate.format(formatter) + " включительно";
+    }
+
+    private boolean isBlank(String value) {
+        return value == null || value.trim().isEmpty();
+    }
+
+    private boolean isTooLong(String value, int maxLength) {
+        return value != null && value.length() > maxLength;
+    }
+
+    private String validateBrandForm(Brand brand) {
+        if (isBlank(brand.getName())) {
+            return "Название марки обязательно для заполнения.";
+        }
+
+        if (isTooLong(brand.getName(), BRAND_NAME_MAX_LENGTH)) {
+            return "Название марки слишком длинное. Максимум 15 символов.";
+        }
+
+        if (isBlank(brand.getCountry())) {
+            return "Страна производитель обязательна для заполнения.";
+        }
+
+        if (isTooLong(brand.getCountry(), BRAND_COUNTRY_MAX_LENGTH)) {
+            return "Страна производитель слишком длинная. Максимум 15 символов.";
+        }
+
+        return null;
+    }
+
+    private String validateModelForm(CarModel carModel) {
+        if (carModel.getBrandId() == null) {
+            return "Необходимо выбрать марку.";
+        }
+
+        if (isBlank(carModel.getName())) {
+            return "Название модели обязательно для заполнения.";
+        }
+
+        if (isTooLong(carModel.getName(), MODEL_NAME_MAX_LENGTH)) {
+            return "Название модели слишком длинное. Максимум 15 символов.";
+        }
+
+        if (isBlank(carModel.getBodyType())) {
+            return "Тип кузова обязателен для заполнения.";
+        }
+
+        if (isTooLong(carModel.getBodyType(), MODEL_BODY_TYPE_MAX_LENGTH)) {
+            return "Тип кузова слишком длинный. Максимум 15 символов.";
+        }
+
+        return null;
+    }
+
+    private String validateCarForm(Car car) {
+        if (isTooLong(car.getDescription(), CAR_DESCRIPTION_MAX_LENGTH)) {
+            return "Описание автомобиля слишком длинное. Максимум 1000 символов.";
+        }
+
+        return null;
+    }
+
+    private String returnModelFormWithError(CarModel carModel, Model viewModel, String error) {
+        viewModel.addAttribute("model", carModel);
+        viewModel.addAttribute("brands", brandService.getAllBrands());
+        viewModel.addAttribute("error", error);
+
+        return "admin/models/form";
+    }
+
+    private String returnBrandFormWithError(Brand brand, Model viewModel, String error) {
+        viewModel.addAttribute("brand", brand);
+        viewModel.addAttribute("error", error);
+
+        return "admin/brands/form";
+    }
+
+    private String returnCarFormWithError(Car car, Integer modelId, Model viewModel, String error) {
+        car.setModelId(modelId);
+
+        viewModel.addAttribute("car", car);
+        viewModel.addAttribute("brands", brandService.getAllBrands());
+        viewModel.addAttribute("error", error);
+
+        try {
+            if (modelId != null) {
+                CarModel selectedModel = modelService.getModelById(modelId);
+                viewModel.addAttribute("selectedBrandId", selectedModel.getBrandId());
+                viewModel.addAttribute("models", modelService.getModelsByBrand(selectedModel.getBrandId()));
+            } else {
+                viewModel.addAttribute("models", modelService.getAllModels());
+            }
+        } catch (Exception e) {
+            viewModel.addAttribute("models", modelService.getAllModels());
+        }
+
+        return "admin/cars/form";
     }
 
 }
