@@ -351,20 +351,79 @@ public class AdminController {
                         @RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) java.time.LocalDate endDate,
                         @RequestParam(required = false) Integer brandId,
                         @RequestParam(required = false) Integer modelId,
+                        @RequestParam(required = false) String userSearch,
                         Model model) {
-        List<Map<String, Object>> sales = adminService.getSalesWithFilters(minAmount, maxAmount, startDate, endDate, brandId, modelId);
+
+        List<Map<String, Object>> sales = adminService.getSalesWithFilters(
+                minAmount,
+                maxAmount,
+                startDate,
+                endDate,
+                brandId,
+                modelId,
+                userSearch
+        );
+
+        BigDecimal totalSalesAmount = adminService.getTotalSalesAmountWithFilters(
+                minAmount,
+                maxAmount,
+                startDate,
+                endDate,
+                brandId,
+                modelId,
+                userSearch
+        );
+
         model.addAttribute("sales", sales);
         model.addAttribute("brands", brandService.getAllBrands());
-        model.addAttribute("models", modelId != null || brandId != null
-                ? modelService.getAllModels()
-                : modelService.getAllModels());
+        model.addAttribute("models", modelService.getAllModels());
         model.addAttribute("minAmount", minAmount);
         model.addAttribute("maxAmount", maxAmount);
         model.addAttribute("startDate", startDate);
         model.addAttribute("endDate", endDate);
         model.addAttribute("selectedBrandId", brandId);
         model.addAttribute("selectedModelId", modelId);
+        model.addAttribute("userSearch", userSearch);
+        model.addAttribute("totalSalesAmount", totalSalesAmount);
+        model.addAttribute("salesPeriodText", buildSalesPeriodText(startDate, endDate));
+
         return "admin/sales/list";
+    }
+
+    @PostMapping("/sales/{id}/cancel")
+    public String cancelSale(@PathVariable Integer id,
+                             RedirectAttributes redirectAttributes,
+                             HttpServletRequest request) {
+        try {
+            Sale sale = saleDao.findById(id)
+                    .orElseThrow(() -> new IllegalArgumentException("Продажа не найдена"));
+
+            adminService.cancelSale(id);
+
+            auditLogService.logAction(
+                    "CANCEL_SALE",
+                    "sales",
+                    id,
+                    "Продажа ID=" + id + ", пользователь ID=" + sale.getUserId() + ", сумма: " + sale.getTotalAmount(),
+                    "Продажа отменена, деньги возвращены на баланс, автомобиль возвращён на склад",
+                    request
+            );
+
+            redirectAttributes.addFlashAttribute(
+                    "success",
+                    "Продажа отменена. Деньги возвращены на баланс клиента, автомобиль возвращён на склад."
+            );
+
+        } catch (IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute(
+                    "error",
+                    "Не удалось отменить продажу. Попробуйте позже или проверьте данные продажи."
+            );
+        }
+
+        return "redirect:/admin/sales";
     }
 
     @GetMapping("/sales/{id}")
@@ -460,6 +519,27 @@ public class AdminController {
 
     private void addCurrentUserIdToModel(Model model, Principal principal) {
         model.addAttribute("currentUserId", getCurrentUserId(principal));
+    }
+
+    private String buildSalesPeriodText(java.time.LocalDate startDate,
+                                        java.time.LocalDate endDate) {
+
+        java.time.format.DateTimeFormatter formatter =
+                java.time.format.DateTimeFormatter.ofPattern("dd.MM.yyyy");
+
+        if (startDate == null && endDate == null) {
+            return "за всё время";
+        }
+
+        if (startDate != null && endDate != null) {
+            return "за период с " + startDate.format(formatter) + " по " + endDate.format(formatter);
+        }
+
+        if (startDate != null) {
+            return "с " + startDate.format(formatter);
+        }
+
+        return "по " + endDate.format(formatter) + " включительно";
     }
 
 }

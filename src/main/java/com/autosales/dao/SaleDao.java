@@ -108,7 +108,8 @@ public class SaleDao {
                                                           LocalDate startDate,
                                                           LocalDate endDate,
                                                           Integer brandId,
-                                                          Integer modelId) {
+                                                          Integer modelId,
+                                                          String userSearch) {
         StringBuilder sql = new StringBuilder(
                 "SELECT s.sale_id      AS saleId, " +
                         "s.sale_date    AS saleDate, " +
@@ -129,6 +130,23 @@ public class SaleDao {
         );
 
         List<Object> params = new ArrayList<>();
+
+        if (userSearch != null && !userSearch.trim().isEmpty()) {
+            sql.append(" AND (u.email LIKE ? " +
+                    "OR u.first_name LIKE ? " +
+                    "OR u.last_name LIKE ? " +
+                    "OR u.patronymic LIKE ? " +
+                    "OR CONCAT_WS(' ', u.last_name, u.first_name, u.patronymic) LIKE ? " +
+                    "OR CAST(u.user_id AS CHAR) LIKE ?) ");
+
+            String like = "%" + userSearch.trim() + "%";
+            params.add(like);
+            params.add(like);
+            params.add(like);
+            params.add(like);
+            params.add(like);
+            params.add(like);
+        }
 
         if (minAmount != null) {
             sql.append(" AND s.total_amount >= ? ");
@@ -158,5 +176,79 @@ public class SaleDao {
         sql.append(" ORDER BY s.sale_date DESC ");
 
         return jdbcTemplate.queryForList(sql.toString(), params.toArray());
+    }
+
+    public BigDecimal sumSalesWithFilters(BigDecimal minAmount,
+                                          BigDecimal maxAmount,
+                                          LocalDate startDate,
+                                          LocalDate endDate,
+                                          Integer brandId,
+                                          Integer modelId,
+                                          String userSearch) {
+
+        StringBuilder sql = new StringBuilder(
+                "SELECT COALESCE(SUM(t.total_amount), 0) FROM ( " +
+                        "SELECT DISTINCT s.sale_id, s.total_amount " +
+                        "FROM sales s " +
+                        "JOIN users u ON s.user_id = u.user_id " +
+                        "JOIN sale_details sd ON s.sale_id = sd.sale_id " +
+                        "JOIN cars c ON sd.car_id = c.car_id " +
+                        "JOIN models m ON c.model_id = m.model_id " +
+                        "JOIN brands b ON m.brand_id = b.brand_id " +
+                        "WHERE 1=1 "
+        );
+
+        List<Object> params = new ArrayList<>();
+
+        if (userSearch != null && !userSearch.trim().isEmpty()) {
+            sql.append(" AND (u.email LIKE ? " +
+                    "OR u.first_name LIKE ? " +
+                    "OR u.last_name LIKE ? " +
+                    "OR u.patronymic LIKE ? " +
+                    "OR CONCAT_WS(' ', u.last_name, u.first_name, u.patronymic) LIKE ? " +
+                    "OR CAST(u.user_id AS CHAR) LIKE ?) ");
+
+            String like = "%" + userSearch.trim() + "%";
+            params.add(like);
+            params.add(like);
+            params.add(like);
+            params.add(like);
+            params.add(like);
+            params.add(like);
+        }
+
+        if (minAmount != null) {
+            sql.append(" AND s.total_amount >= ? ");
+            params.add(minAmount);
+        }
+
+        if (maxAmount != null) {
+            sql.append(" AND s.total_amount <= ? ");
+            params.add(maxAmount);
+        }
+
+        if (startDate != null) {
+            sql.append(" AND s.sale_date >= ? ");
+            params.add(Timestamp.valueOf(startDate.atStartOfDay()));
+        }
+
+        if (endDate != null) {
+            sql.append(" AND s.sale_date < ? ");
+            params.add(Timestamp.valueOf(endDate.plusDays(1).atStartOfDay()));
+        }
+
+        if (brandId != null) {
+            sql.append(" AND m.brand_id = ? ");
+            params.add(brandId);
+        }
+
+        if (modelId != null) {
+            sql.append(" AND m.model_id = ? ");
+            params.add(modelId);
+        }
+
+        sql.append(" ) t ");
+
+        return jdbcTemplate.queryForObject(sql.toString(), params.toArray(), BigDecimal.class);
     }
 }

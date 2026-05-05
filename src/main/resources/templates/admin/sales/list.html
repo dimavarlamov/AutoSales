@@ -9,38 +9,83 @@
 <div class="admin-page">
     <h1>Продажи</h1>
     <a href="/admin/dashboard" class="top-left-button">Назад</a>
+    <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+
+    <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
 
     <!-- Фильтры продаж -->
-    <form th:action="@{/admin/sales}" method="get" class="filter-form" style="margin-bottom: 1.5rem;">
-        <div style="display:flex; flex-wrap:wrap; gap:0.75rem;">
-            <input type="number" step="0.01" name="minAmount" placeholder="Мин. сумма"
+    <div class="sales-filter-wrapper">
+
+        <form th:action="@{/admin/sales}" method="get" class="sales-filter-form">
+
+            <input type="text"
+                   name="userSearch"
+                   placeholder="Покупатель, email или ID"
+                   th:value="${userSearch}" />
+
+            <input type="number"
+                   step="0.01"
+                   name="minAmount"
+                   placeholder="Мин. сумма"
                    th:value="${minAmount}" />
-            <input type="number" step="0.01" name="maxAmount" placeholder="Макс. сумма"
+
+            <input type="number"
+                   step="0.01"
+                   name="maxAmount"
+                   placeholder="Макс. сумма"
                    th:value="${maxAmount}" />
 
-            <input type="date" name="startDate" th:value="${startDate}" />
-            <input type="date" name="endDate" th:value="${endDate}" />
+            <input type="date"
+                   name="startDate"
+                   th:value="${startDate}" />
+
+            <input type="date"
+                   name="endDate"
+                   th:value="${endDate}" />
 
             <select name="brandId">
                 <option value="">Все марки</option>
+
                 <option th:each="brand : ${brands}"
                         th:value="${brand.id}"
                         th:text="${brand.name}"
-                        th:selected="${selectedBrandId == brand.id}"></option>
+                        th:selected="${selectedBrandId == brand.id}">
+                </option>
             </select>
 
             <select name="modelId">
                 <option value="">Все модели</option>
+
                 <option th:each="m : ${models}"
                         th:value="${m.id}"
                         th:text="${m.name}"
-                        th:selected="${selectedModelId == m.id}"></option>
+                        th:selected="${selectedModelId == m.id}">
+                </option>
             </select>
 
-            <button type="submit">Применить</button>
-            <button type="button" onclick="window.location.href='/admin/sales'">Сбросить</button>
+            <button type="submit" class="btn">Применить</button>
+
+            <a th:href="@{/admin/sales}" class="btn sales-reset-btn">Сбросить</a>
+
+        </form>
+
+        <div class="sales-total-card">
+            <div>
+                <div class="sales-total-title">Общая сумма продаж</div>
+                <div class="sales-total-period" th:text="${salesPeriodText}">
+                    за всё время
+                </div>
+            </div>
+
+            <div class="sales-total-amount">
+        <span th:text="${#numbers.formatDecimal(totalSalesAmount, 1, 'WHITESPACE', 2, 'COMMA')}">
+            0,00
+        </span>
+                ₽
+            </div>
         </div>
-    </form>
+
+    </div>
 
     <table class="manage-table">
         <thead>
@@ -71,7 +116,17 @@
             <td th:text="${row.totalAmount} + ' ₽'"></td>
             <td th:text="${row.saleDate}"></td>
             <td>
-                <a th:href="@{/cars/{id}(id=${row.carId})}" class="btn">Детали</a>
+                <div style="display:flex; gap:8px; align-items:center;">
+                    <a th:href="@{/cars/{id}(id=${row.carId})}" class="btn">Детали</a>
+
+                    <form th:action="@{/admin/sales/{id}/cancel(id=${row.saleId})}"
+                          method="post"
+                          style="display:inline;"
+                          onsubmit="return confirm('Отменить продажу и вернуть деньги клиенту на баланс?');">
+
+                        <button type="submit" class="btn btn-cancel">Отменить</button>
+                    </form>
+                </div>
             </td>
         </tr>
         <tr th:if="${#lists.isEmpty(sales)}">

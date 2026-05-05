@@ -3,6 +3,8 @@ package com.autosales.service;
 import com.autosales.dao.*;
 import com.autosales.model.Sale;
 import com.autosales.model.User;
+import com.autosales.model.Car;
+import com.autosales.model.SaleDetail;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -10,7 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.HashMap;
-    import java.util.List;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -98,14 +100,68 @@ public class AdminService {
                 .collect(Collectors.toList());
     }
 
-
     @Transactional(readOnly = true)
     public List<Map<String, Object>> getSalesWithFilters(BigDecimal minAmount,
                                                          BigDecimal maxAmount,
                                                          LocalDate startDate,
                                                          LocalDate endDate,
                                                          Integer brandId,
-                                                         Integer modelId) {
-        return saleDao.findSalesWithFilters(minAmount, maxAmount, startDate, endDate, brandId, modelId);
+                                                         Integer modelId,
+                                                         String userSearch) {
+        return saleDao.findSalesWithFilters(minAmount, maxAmount, startDate, endDate, brandId, modelId, userSearch);
+    }
+
+    @Transactional(readOnly = true)
+    public BigDecimal getTotalSalesAmountWithFilters(BigDecimal minAmount,
+                                                     BigDecimal maxAmount,
+                                                     LocalDate startDate,
+                                                     LocalDate endDate,
+                                                     Integer brandId,
+                                                     Integer modelId,
+                                                     String userSearch) {
+
+        return saleDao.sumSalesWithFilters(
+                minAmount,
+                maxAmount,
+                startDate,
+                endDate,
+                brandId,
+                modelId,
+                userSearch
+        );
+    }
+
+    @Transactional
+    public void cancelSale(Integer saleId) {
+        Sale sale = saleDao.findById(saleId)
+                .orElseThrow(() -> new IllegalArgumentException("Продажа не найдена"));
+
+        User user = userDao.findById(sale.getUserId())
+                .orElseThrow(() -> new IllegalArgumentException("Пользователь не найден"));
+
+        List<SaleDetail> details = saleDetailDao.findBySaleId(saleId);
+
+        if (details.isEmpty()) {
+            throw new IllegalArgumentException("Детали продажи не найдены");
+        }
+
+        for (SaleDetail detail : details) {
+            Car car = carDao.findById(detail.getCarId())
+                    .orElseThrow(() -> new IllegalArgumentException("Автомобиль не найден"));
+
+            int currentStock = car.getStockQuantity() != null ? car.getStockQuantity() : 0;
+            int returnedQuantity = detail.getQuantity() != null ? detail.getQuantity() : 0;
+
+            carDao.updateStock(detail.getCarId(), currentStock + returnedQuantity);
+        }
+
+        BigDecimal currentBalance = user.getBalance() != null ? user.getBalance() : BigDecimal.ZERO;
+        BigDecimal refundAmount = sale.getTotalAmount() != null ? sale.getTotalAmount() : BigDecimal.ZERO;
+
+        user.setBalance(currentBalance.add(refundAmount));
+        userDao.update(user);
+
+        saleDetailDao.deleteBySaleId(saleId);
+        saleDao.delete(saleId);
     }
 }
