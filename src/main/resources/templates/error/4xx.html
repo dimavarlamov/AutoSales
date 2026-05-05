@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Некорректный запрос</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body class="app-error-page">
+
+<button type="button" class="top-left-button error-back-button" onclick="goBack()">Назад</button>
+
+<div class="app-error-container">
+    <div class="app-error-card">
+        <div class="app-error-code">4xx</div>
+
+        <h1>Некорректный запрос</h1>
+
+        <p>
+            Запрос не может быть обработан. Возможно, страница была открыта неправильным способом
+            или были переданы некорректные данные.
+        </p>
+
+        <p class="app-error-note">
+            Работа по исправлению возможной ошибки уже ведётся.
+        </p>
+
+        <a th:href="@{/}" class="btn app-error-home-btn">На главную</a>
+    </div>
+</div>
+
+<script>
+    function goBack() {
+        if (window.history.length > 1) {
+            window.history.back();
+        } else {
+            window.location.href = "/";
+        }
+    }
+</script>
+
+</body>
+</html>

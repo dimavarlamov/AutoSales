@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Страница не найдена</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body class="app-error-page">
+
+<button type="button" class="top-left-button error-back-button" onclick="goBack()">Назад</button>
+
+<div class="app-error-container">
+    <div class="app-error-card">
+        <div class="app-error-code">404</div>
+
+        <h1>Страница не найдена</h1>
+
+        <p>
+            Такой страницы не существует или ссылка была изменена.
+            Возможно, адрес был введён неправильно.
+        </p>
+
+        <p class="app-error-note">
+            Работа по исправлению возможной ошибки уже ведётся.
+        </p>
+
+        <a th:href="@{/}" class="btn app-error-home-btn">На главную</a>
+    </div>
+</div>
+
+<script>
+    function goBack() {
+        if (window.history.length > 1) {
+            window.history.back();
+        } else {
+            window.location.href = "/";
+        }
+    }
+</script>
+
+</body>
+</html>
