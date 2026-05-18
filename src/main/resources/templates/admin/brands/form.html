@@ -21,7 +21,8 @@
                    name="name"
                    th:value="${brand.name}"
                    required
-                   data-max-length="100"
+                   data-max-length="15"
+                   data-allowed-pattern="^[A-Za-zА-Яа-яЁё0-9\\- ]+$"
                    data-field-name="Название марки"/>
         </div>
         <div class="input-group">
@@ -30,7 +31,8 @@
                    name="country"
                    th:value="${brand.country}"
                    required
-                   data-max-length="100"
+                   data-max-length="15"
+                   data-allowed-pattern="^[A-Za-zА-Яа-яЁё\\- ]+$"
                    data-field-name="Страна производитель"/>
         </div>
         <button type="submit" class="btn">Сохранить</button>

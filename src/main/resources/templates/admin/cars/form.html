@@ -43,12 +43,27 @@
 
         <div class="input-group">
             <label>Цена:</label>
-            <input type="number" name="price" step="0.01" th:value="${car.price}" required/>
+            <input type="number"
+                   name="price"
+                   step="0.01"
+                   min="0"
+                   th:value="${car.price}"
+                   required
+                   data-non-negative="true"
+                   data-field-name="Цена"/>
         </div>
 
         <div class="input-group">
             <label>Количество на складе:</label>
-            <input type="number" name="stockQuantity" th:value="${car.stockQuantity}" required/>
+            <input type="number"
+                   name="stockQuantity"
+                   min="0"
+                   step="1"
+                   th:value="${car.stockQuantity}"
+                   required
+                   data-non-negative="true"
+                   data-integer="true"
+                   data-field-name="Количество автомобилей"/>
         </div>
 
         <div class="input-group">
@@ -60,7 +75,7 @@
             <label>Описание:</label>
             <textarea name="description"
                       th:text="${car.description}"
-                      data-max-length="5000"
+                      data-max-length="1000"
                       data-field-name="Описание автомобиля"></textarea>
         </div>
 

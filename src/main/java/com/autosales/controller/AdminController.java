@@ -42,6 +42,8 @@ public class AdminController {
     private static final int MODEL_NAME_MAX_LENGTH = 15;
     private static final int MODEL_BODY_TYPE_MAX_LENGTH = 15;
     private static final int CAR_DESCRIPTION_MAX_LENGTH = 1000;
+    private static final String NAME_PATTERN = "^[A-Za-zА-Яа-яЁё0-9\\- ]+$";
+    private static final String TEXT_PATTERN = "^[A-Za-zА-Яа-яЁё\\- ]+$";
 
     @GetMapping("/dashboard")
     public String dashboard() {
@@ -663,17 +665,21 @@ public class AdminController {
         return value == null || value.trim().isEmpty();
     }
 
+    private boolean hasInvalidCharacters(String value, String regex) {
+        return value != null && !value.matches(regex);
+    }
+
     private boolean isTooLong(String value, int maxLength) {
         return value != null && value.length() > maxLength;
     }
 
     private String validateBrandForm(Brand brand) {
-        if (isBlank(brand.getName())) {
-            return "Название марки обязательно для заполнения.";
-        }
-
         if (isTooLong(brand.getName(), BRAND_NAME_MAX_LENGTH)) {
             return "Название марки слишком длинное. Максимум 15 символов.";
+        }
+
+        if (hasInvalidCharacters(brand.getName(), NAME_PATTERN)) {
+            return "Название марки содержит недопустимые символы. Разрешены буквы, цифры, пробел и дефис.";
         }
 
         if (isBlank(brand.getCountry())) {
@@ -682,6 +688,10 @@ public class AdminController {
 
         if (isTooLong(brand.getCountry(), BRAND_COUNTRY_MAX_LENGTH)) {
             return "Страна производитель слишком длинная. Максимум 15 символов.";
+        }
+
+        if (hasInvalidCharacters(brand.getCountry(), TEXT_PATTERN)) {
+            return "Страна производитель содержит недопустимые символы. Разрешены буквы, пробел и дефис.";
         }
 
         return null;
@@ -700,6 +710,10 @@ public class AdminController {
             return "Название модели слишком длинное. Максимум 15 символов.";
         }
 
+        if (hasInvalidCharacters(carModel.getName(), NAME_PATTERN)) {
+            return "Название модели содержит недопустимые символы. Разрешены буквы, цифры, пробел и дефис.";
+        }
+
         if (isBlank(carModel.getBodyType())) {
             return "Тип кузова обязателен для заполнения.";
         }
@@ -708,10 +722,30 @@ public class AdminController {
             return "Тип кузова слишком длинный. Максимум 15 символов.";
         }
 
+        if (hasInvalidCharacters(carModel.getBodyType(), TEXT_PATTERN)) {
+            return "Тип кузова содержит недопустимые символы. Разрешены буквы, пробел и дефис.";
+        }
+
         return null;
     }
 
     private String validateCarForm(Car car) {
+        if (car.getPrice() == null) {
+            return "Цена обязательна для заполнения.";
+        }
+
+        if (car.getPrice().compareTo(BigDecimal.ZERO) < 0) {
+            return "Цена не может быть отрицательной.";
+        }
+
+        if (car.getStockQuantity() == null) {
+            return "Количество автомобилей обязательно для заполнения.";
+        }
+
+        if (car.getStockQuantity() < 0) {
+            return "Количество автомобилей не может быть отрицательным.";
+        }
+
         if (isTooLong(car.getDescription(), CAR_DESCRIPTION_MAX_LENGTH)) {
             return "Описание автомобиля слишком длинное. Максимум 1000 символов.";
         }

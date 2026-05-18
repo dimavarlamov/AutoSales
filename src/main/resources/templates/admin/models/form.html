@@ -28,7 +28,8 @@
                    name="name"
                    th:value="${model.name}"
                    required
-                   data-max-length="100"
+                   data-max-length="15"
+                   data-allowed-pattern="^[A-Za-zА-Яа-яЁё0-9\\- ]+$"
                    data-field-name="Название модели"/>
         </div>
         <div class="input-group">
@@ -72,7 +73,8 @@
                    name="bodyType"
                    th:value="${model.bodyType}"
                    required
-                   data-max-length="50"
+                   data-max-length="15"
+                   data-allowed-pattern="^[A-Za-zА-Яа-яЁё\\- ]+$"
                    data-field-name="Тип кузова"/>
         </div>
         <div class="input-group">
